@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        anim = visualTransform.GetComponent<Animator>();
+        anim = GetComponent<Animator>();
         sr = visualTransform.GetComponent<SpriteRenderer>();
 
     }
@@ -49,21 +49,22 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpPressed = false;
         }
+        jumpPressed = false;
 
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
         if (moveInput > 0 && !isFacingRight)
         {
             isFacingRight = true;
-            Flip(visualTransform);
+
+            Flip(transform);
 
         }
         else if (moveInput < 0 && isFacingRight)
         {
             isFacingRight = false;
-            Flip(visualTransform);
+            Flip(transform);
         }
 
         if (Mathf.Abs(moveInput) > 0.01f)
