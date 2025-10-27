@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5.0f;
     [SerializeField] private float jumpForce = 7.0f;
+    [SerializeField] private float attackCooldown = 2.0f;
 
     [Header("GroundCheck")]
     [SerializeField] private Transform groundCheck;
@@ -13,8 +14,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     [Header("Flip")]
-    [SerializeField] private Transform visualTransform;
     [SerializeField] private Transform swordTransform;
+
+    [Header("Slash Effect")]
+    [SerializeField] private SlashEffect slashEffect;
 
     private Animator anim;
     private Rigidbody2D rb;
@@ -25,21 +28,20 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool isFacingRight = true;
 
+    private bool canAttack = true;
+    private float attackTimer;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        sr = visualTransform.GetComponent<SpriteRenderer>();
-
+        sr = GetComponent<SpriteRenderer>();
     }
 
     void Update()
     {
-        moveInput = Input.GetAxisRaw("Horizontal");
-        if (Input.GetButtonDown("Jump"))
-        {
-            jumpPressed = true;
-        }
+        HandleInput();
+        AttackCooldown();
     }
 
     void FixedUpdate()
@@ -57,9 +59,7 @@ public class PlayerController : MonoBehaviour
         if (moveInput > 0 && !isFacingRight)
         {
             isFacingRight = true;
-
             Flip(transform);
-
         }
         else if (moveInput < 0 && isFacingRight)
         {
@@ -87,6 +87,62 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 
+    private void HandleInput()
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            jumpPressed = true;
+        }
+
+        if (Input.GetMouseButtonDown(0) && canAttack)
+        {
+            Debug.Log("Attack");
+            Attack();
+        }
+    }
+
+    private void AttackCooldown()
+    {
+        if (!canAttack)
+        {
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0)
+            {
+                canAttack = true;
+            }
+        }
+    }
+
+    private void Attack()
+    {
+        canAttack = false;
+
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = 0;
+        Vector2 mouseDirection = (mousePos - transform.position).normalized;
+
+        if (mouseDirection.magnitude > 0.1f)
+        {
+            float angle = Mathf.Atan2(mouseDirection.y, mouseDirection.x) * Mathf.Rad2Deg;
+            Debug.Log(angle);
+            transform.rotation = Quaternion.Euler(0, 0, angle);
+        }
+
+        attackTimer = attackCooldown;
+        anim.SetTrigger("Attack");
+    }
+
+    // ⭐ Animation Event에서 호출될 메서드
+    public void OnSlashFrame()
+    {
+        if (slashEffect != null)
+        {
+            slashEffect.PlaySlashEffect();
+        }
+    }
+
     private void Flip(Transform transform)
     {
         Vector3 visualScale = transform.localScale;
@@ -94,7 +150,5 @@ public class PlayerController : MonoBehaviour
         transform.localScale = visualScale;
     }
 
-    // 다른 스크립트에서 방향 확인이 필요할 때
     public bool IsFacingRight => isFacingRight;
-
 }

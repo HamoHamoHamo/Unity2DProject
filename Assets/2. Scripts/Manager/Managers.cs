@@ -9,6 +9,7 @@ public class Managers : MonoBehaviour
     private static PoolManager _pool;
     private static GameManager _game;
     private static UIManager _ui;
+    private static SpawnManager _spawn;
 
     private static void Init()
     {
@@ -55,6 +56,15 @@ public class Managers : MonoBehaviour
         {
             CreateManager(ref _ui, "UIManager");
             return _ui;
+        }
+    }
+
+    public static SpawnManager Spawn
+    {
+        get
+        {
+            CreateManager(ref _spawn, "SpawnManager");
+            return _spawn;
         }
     }
 }
