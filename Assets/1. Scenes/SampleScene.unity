@@ -3762,7 +3762,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 2
   m_Material: {fileID: 6200000, guid: a6fb3ba66a6094cdca44f2f7023ae524, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -3787,7 +3787,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  jumpForce: 7
+  jumpForce: 10
+  fallMultiplier: 3
+  lowJumpMultiplier: 2.5
   attackCooldown: 0.5
   groundCheck: {fileID: 1237764220}
   groundCheckRadius: 0.2

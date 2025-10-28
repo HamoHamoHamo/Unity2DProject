@@ -5,7 +5,9 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5.0f;
-    [SerializeField] private float jumpForce = 7.0f;
+    [SerializeField] private float jumpForce = 15.0f;
+    [SerializeField] private float fallMultiplier = 2.5f;
+    [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float attackCooldown = 2.0f;
 
     [Header("GroundCheck")]
@@ -55,15 +57,9 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-
-        if (jumpPressed && isGrounded)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        }
-        jumpPressed = false;
-
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+
+        HandleJump();
 
         if (moveInput > 0 && !isFacingRight)
         {
@@ -103,7 +99,7 @@ public class PlayerController : MonoBehaviour
         moveInput = Input.GetAxisRaw("Horizontal");
 
         // 점프
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) && isGrounded)
         {
             jumpPressed = true;
         }
@@ -130,11 +126,40 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetAxisRaw("Vertical") < 0)
+        if (Input.GetAxisRaw("Vertical") < 0 && Input.GetButtonDown("Jump"))
         {
             DropThroughPlatform();
         }
 
+    }
+
+    private void HandleJump()
+    {
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+        if (jumpPressed && isGrounded)
+        {
+            Jump();
+        }
+
+        if (rb.velocity.y < 0)
+        {
+            // 낙하 시 중력 증가
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
+        }
+        else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.W))
+        {
+            // 점프 키를 떼면 상승 속도 감소 (짧은 점프 가능)
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.fixedDeltaTime;
+        }
+
+        jumpPressed = false;
+    }
+
+    private void Jump()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 0f);
+        rb.velocity += Vector2.up * jumpForce;
     }
 
     private void AttackCooldown()
