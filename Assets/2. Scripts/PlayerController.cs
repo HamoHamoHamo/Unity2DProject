@@ -19,6 +19,13 @@ public class PlayerController : MonoBehaviour
     [Header("Slash Effect")]
     [SerializeField] private SlashEffect slashEffect;
 
+    [Header("Item System")]
+    [SerializeField] private Transform itemHoldPoint;
+    [SerializeField] private float itemPickupRange = 1f;
+    [SerializeField] private LayerMask throwableItemLayer;
+    private ThrowableItem heldItem = null;
+    private List<ThrowableItem> nearbyItems = new List<ThrowableItem>();
+
     private Animator anim;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -30,6 +37,8 @@ public class PlayerController : MonoBehaviour
 
     private bool canAttack = true;
     private float attackTimer;
+
+
 
     void Awake()
     {
@@ -89,18 +98,38 @@ public class PlayerController : MonoBehaviour
 
     private void HandleInput()
     {
+
+        // 이동
         moveInput = Input.GetAxisRaw("Horizontal");
 
+        // 점프
         if (Input.GetButtonDown("Jump"))
         {
             jumpPressed = true;
         }
 
+        // 공격
         if (Input.GetMouseButtonDown(0) && canAttack)
         {
             Debug.Log("Attack");
             Attack();
         }
+
+        // 투사체
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (heldItem != null)
+            {
+                // 이미 들고 있으면 던지기
+                ThrowHeldItem();
+            }
+            else
+            {
+                // 들고 있지 않으면 습득 시도
+                TryPickupNearestItem();
+            }
+        }
+
     }
 
     private void AttackCooldown()
@@ -151,4 +180,54 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool IsFacingRight => isFacingRight;
+
+    void TryPickupNearestItem()
+    {
+        // 범위 내 모든 투사체 찾기
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(
+            transform.position,
+            itemPickupRange,
+            throwableItemLayer
+        );
+
+        ThrowableItem nearestItem = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (Collider2D col in colliders)
+        {
+            ThrowableItem item = col.GetComponent<ThrowableItem>();
+
+            if (item != null && !item.IsHeld && !item.IsThrown)
+            {
+                float distance = Vector2.Distance(transform.position, col.transform.position);
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestItem = item;
+                }
+            }
+        }
+
+        // 가장 가까운 아이템 습득
+        if (nearestItem != null)
+        {
+            heldItem = nearestItem;
+            heldItem.Pickup(itemHoldPoint, this);
+        }
+    }
+
+    void ThrowHeldItem()
+    {
+        if (heldItem == null) return;
+
+        // 마우스 방향 계산
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 throwDirection = (mousePos - itemHoldPoint.position).normalized;
+
+        // 던지기
+        heldItem.Throw(throwDirection);
+        heldItem = null;
+    }
+
 }
