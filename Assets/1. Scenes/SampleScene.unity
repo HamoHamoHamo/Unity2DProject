@@ -3793,7 +3793,7 @@ MonoBehaviour:
   groundCheckRadius: 0.2
   groundLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 320
   swordTransform: {fileID: 1841739333}
   slashEffect: {fileID: 766610244}
   itemHoldPoint: {fileID: 1090523089}
@@ -4157,8 +4157,8 @@ GameObject:
   - component: {fileID: 2018302316}
   - component: {fileID: 2018302315}
   - component: {fileID: 2018302314}
-  m_Layer: 6
-  m_Name: Tilemap
+  m_Layer: 8
+  m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

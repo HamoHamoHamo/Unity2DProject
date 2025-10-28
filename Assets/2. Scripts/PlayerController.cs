@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
     private bool canAttack = true;
     private float attackTimer;
 
-
+    private bool isDropping;
 
     void Awake()
     {
@@ -130,6 +130,11 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (Input.GetAxisRaw("Vertical") < 0)
+        {
+            DropThroughPlatform();
+        }
+
     }
 
     private void AttackCooldown()
@@ -163,7 +168,7 @@ public class PlayerController : MonoBehaviour
         anim.SetTrigger("Attack");
     }
 
-    // ⭐ Animation Event에서 호출될 메서드
+    // Animation Event에서 호출될 메서드
     public void OnSlashFrame()
     {
         if (slashEffect != null)
@@ -228,6 +233,31 @@ public class PlayerController : MonoBehaviour
         // 던지기
         heldItem.Throw(throwDirection);
         heldItem = null;
+    }
+
+    private void DropThroughPlatform()
+    {
+        if (isDropping || !isGrounded) return;
+        StartCoroutine(DropThroughCo());
+    }
+
+    private IEnumerator DropThroughCo()
+    {
+        isDropping = true;
+
+        int platformLayerIndex = LayerMask.NameToLayer("Platform");
+        int playerLayerIndex = gameObject.layer;
+
+        // 플랫폼 레이어와의 충돌 일시적으로 무시
+        Physics2D.IgnoreLayerCollision(playerLayerIndex, platformLayerIndex, true);
+        rb.velocity = new Vector2(rb.velocity.x, -3f);
+
+
+        yield return new WaitForSeconds(0.5f);
+        // 충돌 복구
+        Physics2D.IgnoreLayerCollision(playerLayerIndex, platformLayerIndex, false);
+
+        isDropping = false;
     }
 
 }
