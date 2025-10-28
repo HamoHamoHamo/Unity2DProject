@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5.0f;
+    [SerializeField] private float dodgeForce = 1.1f;
     [SerializeField] private float jumpForce = 15.0f;
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
@@ -41,6 +42,7 @@ public class PlayerController : MonoBehaviour
     private float attackTimer;
 
     private bool isDropping;
+    private bool isDodging;
 
     void Awake()
     {
@@ -57,7 +59,10 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+        if (!isDodging)
+        {
+            rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+        }
 
         HandleJump();
 
@@ -96,16 +101,19 @@ public class PlayerController : MonoBehaviour
     {
 
         // 이동
-        moveInput = Input.GetAxisRaw("Horizontal");
+        if (!isDodging)
+        {
+            moveInput = Input.GetAxisRaw("Horizontal");
+        }
 
         // 점프
-        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.W) && isGrounded && !isDodging)
         {
             jumpPressed = true;
         }
 
         // 공격
-        if (Input.GetMouseButtonDown(0) && canAttack)
+        if (Input.GetMouseButtonDown(0) && canAttack && !isDodging)
         {
             Debug.Log("Attack");
             Attack();
@@ -114,7 +122,7 @@ public class PlayerController : MonoBehaviour
         // 투사체
         if (Input.GetMouseButtonDown(1))
         {
-            if (heldItem != null)
+            if (heldItem != null && !isDodging)
             {
                 // 이미 들고 있으면 던지기
                 ThrowHeldItem();
@@ -126,9 +134,16 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetAxisRaw("Vertical") < 0 && Input.GetButtonDown("Jump"))
+        // 아랫점프
+        if (Input.GetKey(KeyCode.S) && Input.GetButtonDown("Jump") && !isDodging)
         {
             DropThroughPlatform();
+        }
+
+        // 구르기
+        else if (!isDodging && isGrounded && Input.GetKey(KeyCode.S) && moveInput != 0)
+        {
+            Dodge();
         }
 
     }
@@ -154,6 +169,29 @@ public class PlayerController : MonoBehaviour
         }
 
         jumpPressed = false;
+    }
+
+    private void Dodge()
+    {
+        isDodging = true;
+        StartCoroutine(DodgeCo());
+    }
+
+    private IEnumerator DodgeCo()
+    {
+        anim.SetTrigger("Dodge");
+        rb.velocity = new Vector2(moveInput * moveSpeed * dodgeForce, rb.velocity.y);
+
+        // 플랫폼 레이어와의 충돌 일시적으로 무시
+        int enemyLayerIndex = LayerMask.NameToLayer("Enemy");
+        int playerLayerIndex = gameObject.layer;
+        Physics2D.IgnoreLayerCollision(playerLayerIndex, enemyLayerIndex, true);
+
+        yield return new WaitForSeconds(0.6f);
+
+        isDodging = false;
+        // 충돌 복구
+        Physics2D.IgnoreLayerCollision(playerLayerIndex, enemyLayerIndex, false);
     }
 
     private void Jump()

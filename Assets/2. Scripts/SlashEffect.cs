@@ -3,7 +3,7 @@ using UnityEngine;
 public class SlashEffect : MonoBehaviour
 {
     [Header("Effect Settings")]
-    [SerializeField] private float effectDuration = 1f;
+    [SerializeField] private float effectDuration = 0.3f;
     [SerializeField] private AnimationCurve fadeOutCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
 
     private SpriteRenderer slashRenderer;
