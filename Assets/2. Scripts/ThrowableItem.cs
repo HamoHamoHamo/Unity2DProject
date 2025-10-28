@@ -11,22 +11,15 @@ public class ThrowableItem : MonoBehaviour
     [SerializeField] private LayerMask enemyLayer;
 
     private Rigidbody2D rb;
-    private Collider2D itemCollider;
-    private SpriteRenderer spriteRenderer;
 
     private bool isHeld = false;
     private bool isThrown = false;
     private Transform holdPoint;
-    private PlayerController player;
 
-    private Vector3 originalScale;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        itemCollider = GetComponent<Collider2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        originalScale = transform.localScale;
     }
 
     void Start()
@@ -61,7 +54,6 @@ public class ThrowableItem : MonoBehaviour
         isHeld = true;
         isThrown = false;
         holdPoint = holdPosition;
-        player = playerController;
 
         // 물리 비활성화
         SetPhysicsState(false);
