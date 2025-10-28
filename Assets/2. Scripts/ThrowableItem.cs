@@ -84,7 +84,7 @@ public class ThrowableItem : MonoBehaviour
         holdPoint = null;
 
         // 부모 해제
-        transform.SetParent(null);
+        Managers.Pool.ReturnPool(this, true);
 
         // 물리 활성화
         SetPhysicsState(true);

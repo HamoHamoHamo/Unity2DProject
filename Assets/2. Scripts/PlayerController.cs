@@ -182,7 +182,8 @@ public class PlayerController : MonoBehaviour
         anim.SetTrigger("Dodge");
         rb.velocity = new Vector2(moveInput * moveSpeed * dodgeForce, rb.velocity.y);
 
-        // 플랫폼 레이어와의 충돌 일시적으로 무시
+        // Enemy 레이어와의 충돌 일시적으로 무시
+        // TODO 적 공격, 투사체, 적 충돌 테스트
         int enemyLayerIndex = LayerMask.NameToLayer("Enemy");
         int playerLayerIndex = gameObject.layer;
         Physics2D.IgnoreLayerCollision(playerLayerIndex, enemyLayerIndex, true);

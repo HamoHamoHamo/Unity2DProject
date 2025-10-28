@@ -34,11 +34,11 @@ public class ObjectPool<T> where T : MonoBehaviour
         return inst;
     }
 
-    public void Enqueue(T instance)
+    public void Enqueue(T instance, bool isActive = false)
     {
         if (instance == null) return;
 
-        instance.gameObject.SetActive(false);
+        instance.gameObject.SetActive(isActive);
         pool.Enqueue(instance);
     }
 }

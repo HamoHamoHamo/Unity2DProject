@@ -49,7 +49,7 @@ public class PoolManager : MonoBehaviour
         return null;
     }
 
-    public void ReturnPool<T>(T instance) where T : MonoBehaviour
+    public void ReturnPool<T>(T instance, bool isActive = false) where T : MonoBehaviour
     {
         if (instance == null) return;
 
@@ -63,7 +63,7 @@ public class PoolManager : MonoBehaviour
 
         if (pool != null)
         {
-            pool.Enqueue(instance);
+            pool.Enqueue(instance, isActive);
         }
     }
 }
