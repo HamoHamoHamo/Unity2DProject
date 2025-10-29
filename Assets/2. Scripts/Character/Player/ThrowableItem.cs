@@ -3,7 +3,7 @@ using UnityEngine;
 public class ThrowableItem : MonoBehaviour
 {
     [Header("Item Settings")]
-    [SerializeField] private float damage = 20f;
+    [SerializeField] private int damage = 20;
     [SerializeField] private float throwForce = 15f;
 
     [Header("Pickup Settings")]
@@ -84,10 +84,6 @@ public class ThrowableItem : MonoBehaviour
         // 던지기
         rb.velocity = direction.normalized * throwForce;
 
-        Debug.Log($"{gameObject.name} thrown!");
-
-        // 일정 시간 후 자동 제거 (맵 밖으로 나가는 것 방지)
-        // Destroy(gameObject, 5f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -95,22 +91,17 @@ public class ThrowableItem : MonoBehaviour
         if (!isThrown) return;
 
         // 적에게 맞았을 때
-        if (((1 << other.gameObject.layer) & enemyLayer) != 0)
+        if (other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             // 적 데미지 처리
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
             {
-                // enemy.TakeDamage(damage);
+                enemy.TakeDamage(damage);
                 Debug.Log($"Enemy hit for {damage} damage!");
             }
 
-            // 아이템 제거 또는 튕겨나가게 하기
-            Destroy(gameObject);
-
-            // 또는 튕겨나가게 하려면:
-            // isThrown = false;
-            // rb.velocity *= 0.3f; // 속도 감소
+            Managers.Pool.ReturnPool(this, false);
         }
 
         // 벽에 맞았을 때
