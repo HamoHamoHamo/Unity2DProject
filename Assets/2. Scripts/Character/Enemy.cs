@@ -7,10 +7,19 @@ using UnityEngine;
 /// </summary>
 public class Enemy : MonoBehaviour, IDamageable
 {
+    public enum EnemyType
+    {
+        Melee,   // 근접 적
+        Ranged   // 원거리 적
+    }
+
     [Header("AI Settings")]
+    [SerializeField] private EnemyType enemyType = EnemyType.Melee;
     [SerializeField] private float detectionRange = 10f;
-    [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float stopDistance = 2f; // 이 거리 이하에서는 멈춤
+    [SerializeField] private float meleeAttackRange = 2f; // 근접 공격 범위
+    [SerializeField] private float rangedAttackRange = 8f; // 원거리 공격 범위
+    [SerializeField] private float meleeStopDistance = 2f; // 근접 적 정지 거리
+    [SerializeField] private float rangedStopDistance = 5f; // 원거리 적 정지 거리
 
     [Header("Jump Detection")]
     [SerializeField] private float jumpCheckDistance = 2f;
@@ -88,7 +97,6 @@ public class Enemy : MonoBehaviour, IDamageable
                 HandleIdleState();
                 break;
             case EnemyState.Chasing:
-                Debug.Log("Chasing");
                 HandleChasingState();
                 break;
             case EnemyState.Attacking:
@@ -103,6 +111,9 @@ public class Enemy : MonoBehaviour, IDamageable
     private void UpdateState()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        // 타입별 공격 범위 선택
+        float attackRange = (enemyType == EnemyType.Melee) ? meleeAttackRange : rangedAttackRange;
 
         if (distanceToPlayer > detectionRange)
         {
@@ -126,8 +137,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void HandleChasingState()
     {
-        // 땅에 있을 때만 점프/아랫점프 판단
-        if (movement.IsGrounded)
+        // 타입별 정지 거리 선택
+        float stopDistance = (enemyType == EnemyType.Melee) ? meleeStopDistance : rangedStopDistance;
+
+        // 근접 적만 점프/아랫점프 시도 (원거리 적은 평지에서만 활동)
+        if (enemyType == EnemyType.Melee && movement.IsGrounded)
         {
             if (ShouldJumpToReachPlayer())
             {
@@ -169,7 +183,8 @@ public class Enemy : MonoBehaviour, IDamageable
         }
         else
         {
-            // 너무 가까우면 멈춤
+            // 원거리 적: 일정 거리 유지
+            // 근접 적: 너무 가까우면 멈춤
             movement.SetMoveInput(0);
         }
     }
@@ -211,6 +226,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
         // 5. 공격 완료 - 다시 움직일 수 있음
         isAttacking = false;
+    }
+
+    public void FireBullet()
+    {
+        combat.FireBullet();
     }
 
     /// <summary>
@@ -327,6 +347,10 @@ public class Enemy : MonoBehaviour, IDamageable
     // Gizmos로 AI 범위 시각화
     void OnDrawGizmosSelected()
     {
+        // 타입별 범위 선택
+        float attackRange = (enemyType == EnemyType.Melee) ? meleeAttackRange : rangedAttackRange;
+        float stopDistance = (enemyType == EnemyType.Melee) ? meleeStopDistance : rangedStopDistance;
+
         // 탐지 범위
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);

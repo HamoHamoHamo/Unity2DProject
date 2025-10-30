@@ -15,6 +15,10 @@ public class SpawnConfig : ScriptableObject
     public float throwableItemSpawnInterval = 5f;
     public int maxThrowableItems = 3;
 
+    [Header("Bullet Settings")]
+    public Bullet bulletPrefab;
+    public int bulletPoolSize = 50;
+
     [Header("General Settings")]
     public float minSpawnDistance = 3f;
 }

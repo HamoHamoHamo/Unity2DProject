@@ -6,14 +6,26 @@ using UnityEngine;
 /// </summary>
 public class CharacterCombat : MonoBehaviour
 {
+    public enum AttackType
+    {
+        Melee,   // 근접 공격
+        Ranged   // 원거리 공격 (Bullet 발사)
+    }
+
     [Header("Combat Settings")]
+    [SerializeField] private AttackType attackType = AttackType.Melee;
     [SerializeField] private float attackCooldown = 2.0f;
     [SerializeField] private int attackDamage = 1;
 
-    [Header("Attack Detection - Box Area")]
+    [Header("Attack Detection - Box Area (Melee Only)")]
     [SerializeField] private Transform attackArea; // 공격 범위의 중심점 (크기 정보 포함)
     [SerializeField] private Vector2 attackBoxSize = new Vector2(2f, 1f); // 박스 크기 (width, height)
     [SerializeField] private LayerMask targetLayer; // 공격 대상 레이어
+
+    [Header("Ranged Attack Settings")]
+    [SerializeField] private Bullet bulletPrefab; // Bullet 프리팹 (원거리 공격용)
+    [SerializeField] private Transform bulletSpawnPoint; // Bullet 발사 위치
+    [SerializeField] private float bulletSpeed = 10f; // Bullet 속도
 
     [Header("References")]
     [SerializeField] private SlashEffect slashEffect;
@@ -23,6 +35,7 @@ public class CharacterCombat : MonoBehaviour
 
     private bool canAttack = true;
     private float attackTimer;
+    private GameObject fireTarget;
 
     public bool CanAttack => canAttack;
 
@@ -59,13 +72,6 @@ public class CharacterCombat : MonoBehaviour
         canAttack = false;
         attackTimer = attackCooldown;
 
-        // 공격 방향으로 회전
-        // if (direction.magnitude > 0.1f)
-        // {
-        //     float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        //     transform.rotation = Quaternion.Euler(0, 0, angle);
-        // }
-
         if (anim != null)
         {
             anim.SetTrigger("Attack");
@@ -84,7 +90,7 @@ public class CharacterCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// Animation Event에서 호출 - 슬래시 이펙트 재생
+    /// Animation Event에서 호출 - 슬래시 이펙트 재생 또는 Bullet 발사
     /// </summary>
     public void OnSlashFrame()
     {
@@ -93,7 +99,7 @@ public class CharacterCombat : MonoBehaviour
             slashEffect.PlaySlashEffect();
         }
 
-        // 이 타이밍에 공격 판정
+        // 근접 공격 판정
         PerformAttackDetection();
     }
 
@@ -150,6 +156,54 @@ public class CharacterCombat : MonoBehaviour
     {
         if (target == null) return false;
         return Vector2.Distance(transform.position, target.position) <= range;
+    }
+
+    /// <summary>
+    /// Bullet 발사 (원거리 공격)
+    /// </summary>
+    public void FireBullet()
+    {
+        if (bulletPrefab == null)
+        {
+            Debug.LogWarning("[CharacterCombat] bulletPrefab이 설정되지 않았습니다!");
+            return;
+        }
+
+        if (gameObject.layer == LayerMask.NameToLayer("Enemy"))
+        {
+            // 플레이어 찾기
+            fireTarget = GameObject.FindGameObjectWithTag("Player");
+        }
+        else if (gameObject.layer == LayerMask.NameToLayer("Player"))
+        {
+            // TODO 튕겨내기
+            fireTarget = null;
+        }
+
+        if (fireTarget == null)
+            return;
+
+        // Bullet을 풀에서 가져오기
+        Bullet bullet = Managers.Pool.GetFromPool(bulletPrefab);
+        if (bullet == null)
+        {
+            Debug.LogWarning("[CharacterCombat] Bullet 풀이 비어있습니다!");
+            return;
+        }
+
+        // Bullet 위치 설정 (발사 지점이 있으면 사용, 없으면 자기 위치)
+        Vector3 spawnPosition = bulletSpawnPoint != null ? bulletSpawnPoint.position : transform.position;
+        bullet.transform.position = spawnPosition;
+
+        // 플레이어 방향 계산
+        Vector2 direction = (fireTarget.transform.position - spawnPosition).normalized;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        bullet.transform.rotation = Quaternion.Euler(0, 0, angle);
+
+        // Bullet 초기화 및 발사
+        bullet.Initialize(direction, attackDamage);
+
+        Debug.Log($"[CharacterCombat] Bullet 발사! 방향: {direction}");
     }
 
     // Gizmos로 공격 범위 시각화

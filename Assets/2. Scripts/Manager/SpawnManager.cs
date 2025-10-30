@@ -17,6 +17,9 @@ public class SpawnManager : MonoBehaviour
     private float throwableItemSpawnInterval;
     private int maxThrowableItems;
 
+    private Bullet bulletPrefab;
+    private int bulletPoolSize;
+
     private float minSpawnDistance;
 
     private List<Vector3Int> walkableTiles = new List<Vector3Int>();
@@ -47,9 +50,11 @@ public class SpawnManager : MonoBehaviour
         walkableTilemaps = tilemaps;
         enemyPrefab = config.enemyPrefab;
         throwableItemPrefab = config.throwableItemPrefab;
+        bulletPrefab = config.bulletPrefab;
 
         enemyPoolSize = config.enemyPoolSize;
         throwableItemPoolSize = config.throwableItemPoolSize;
+        bulletPoolSize = config.bulletPoolSize;
         enemySpawnInterval = config.enemySpawnInterval;
         throwableItemSpawnInterval = config.throwableItemSpawnInterval;
         maxEnemies = config.maxEnemies;
@@ -83,6 +88,12 @@ public class SpawnManager : MonoBehaviour
         {
             Managers.Pool.CreatePool(throwableItemPrefab, throwableItemPoolSize);
             Debug.Log($"[SpawnManager] throwableItem Pool 생성 완료 (크기: {throwableItemPoolSize})");
+        }
+
+        if (bulletPrefab != null)
+        {
+            Managers.Pool.CreatePool(bulletPrefab, bulletPoolSize);
+            Debug.Log($"[SpawnManager] Bullet Pool 생성 완료 (크기: {bulletPoolSize})");
         }
 
         isInitialized = true;

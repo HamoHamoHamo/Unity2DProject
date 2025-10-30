@@ -20,4 +20,6 @@ MonoBehaviour:
   throwableItemPoolSize: 10
   throwableItemSpawnInterval: 5
   maxThrowableItems: 3
+  bulletPrefab: {fileID: 7470246796705407974, guid: f38da1e71abeb49618d9b9ac4baeab34, type: 3}
+  bulletPoolSize: 20
   minSpawnDistance: 3

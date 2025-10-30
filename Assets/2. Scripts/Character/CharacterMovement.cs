@@ -146,14 +146,16 @@ public class CharacterMovement : MonoBehaviour
 
         rb.velocity = new Vector2(currentMoveInput * moveSpeed * dodgeForce, rb.velocity.y);
 
-        // Enemy 레이어와의 충돌 일시적으로 무시
+        // Enemy와 Bullet 레이어와의 충돌 일시적으로 무시
         int enemyLayerIndex = LayerMask.NameToLayer("Enemy");
+        int bulletLayerIndex = LayerMask.NameToLayer("Bullet");
         int playerLayerIndex = LayerMask.NameToLayer("Player");
         int currentLayer = gameObject.layer;
 
         if (currentLayer == playerLayerIndex)
         {
             Physics2D.IgnoreLayerCollision(playerLayerIndex, enemyLayerIndex, true);
+            Physics2D.IgnoreLayerCollision(playerLayerIndex, bulletLayerIndex, true);
         }
 
         yield return new WaitForSeconds(dodgeTime);
@@ -163,6 +165,7 @@ public class CharacterMovement : MonoBehaviour
         if (currentLayer == playerLayerIndex)
         {
             Physics2D.IgnoreLayerCollision(playerLayerIndex, enemyLayerIndex, false);
+            Physics2D.IgnoreLayerCollision(playerLayerIndex, bulletLayerIndex, false);
         }
     }
 
