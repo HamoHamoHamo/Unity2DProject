@@ -14,8 +14,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
     [Header("Jump Detection")]
     [SerializeField] private float jumpCheckDistance = 2f;
-    [SerializeField] private float jumpHeightThreshold = 2f; // 플레이어가 이 높이 이상 위에 있으면 점프
-    [SerializeField] private float dropHeightThreshold = 2f; // 플레이어가 이 높이 이하에 있으면 아랫점프
+    [SerializeField] private float jumpHeightThreshold = 1f; // 플레이어가 이 높이 이상 위에 있으면 점프
+    [SerializeField] private float maxJumpHeight = 5f; // 점프로 도달 가능한 최대 높이 (이보다 높으면 점프 안함)
+    [SerializeField] private float dropHeightThreshold = 1f; // 플레이어가 이 높이 이하에 있으면 아랫점프
     [SerializeField] private LayerMask obstacleLayer;
 
     [Header("Behavior Timers")]
@@ -23,6 +24,9 @@ public class Enemy : MonoBehaviour, IDamageable
     [SerializeField] private float dropCooldown = 0.5f; // 아랫점프 쿨다운
     [SerializeField] private float attackDelay = 0.3f; // 공격 전 딜레이 (예측 가능성)
     [SerializeField] private float attackDuration = 0.5f; // 공격 애니메이션 지속 시간
+
+    [Header("Movement Smoothing")]
+    [SerializeField] private float movementSmoothTime = 0.3f; // 이동 반응 시간 (높을수록 느리게 반응)
 
     [Header("References")]
     [SerializeField] private Transform player;
@@ -35,6 +39,10 @@ public class Enemy : MonoBehaviour, IDamageable
     private float lastDropTime;
     private bool isAttacking;
     private bool isDead = false;
+
+    // 스무딩 관련 변수
+    private Vector2 smoothedTargetPosition;
+    private Vector2 smoothVelocity;
 
     private EnemyState currentState = EnemyState.Idle;
 
@@ -80,6 +88,7 @@ public class Enemy : MonoBehaviour, IDamageable
                 HandleIdleState();
                 break;
             case EnemyState.Chasing:
+                Debug.Log("Chasing");
                 HandleChasingState();
                 break;
             case EnemyState.Attacking:
@@ -117,24 +126,41 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void HandleChasingState()
     {
-        // 점프/아랫점프 판단
-        if (ShouldJumpToReachPlayer())
+        // 땅에 있을 때만 점프/아랫점프 판단
+        if (movement.IsGrounded)
         {
-            movement.RequestJump();
-            lastJumpTime = Time.time;
-        }
-        else if (ShouldDropToReachPlayer())
-        {
-            movement.DropThroughPlatform();
-            lastDropTime = Time.time;
+            if (ShouldJumpToReachPlayer())
+            {
+                movement.RequestJump();
+                lastJumpTime = Time.time;
+            }
+            else if (ShouldDropToReachPlayer())
+            {
+                movement.DropThroughPlatform();
+                lastDropTime = Time.time;
+            }
         }
 
-        // 플레이어 방향으로 이동
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        // 플레이어 위치를 부드럽게 추적 (스무딩) - 항상 업데이트!
+        smoothedTargetPosition = Vector2.SmoothDamp(
+            smoothedTargetPosition,
+            player.position,
+            ref smoothVelocity,
+            movementSmoothTime
+        );
 
-        if (distanceToPlayer > stopDistance)
+        // 공중에 있을 때는 이동 입력을 하지 않음 (관성으로만 이동)
+        if (!movement.IsGrounded)
         {
-            float direction = Mathf.Sign(player.position.x - transform.position.x);
+            return;
+        }
+
+        // 부드럽게 처리된 타겟까지의 거리 계산
+        float distanceToTarget = Vector2.Distance(transform.position, smoothedTargetPosition);
+
+        if (distanceToTarget > stopDistance)
+        {
+            float direction = Mathf.Sign(smoothedTargetPosition.x - transform.position.x);
             movement.SetMoveInput(direction);
 
             // 플레이어 방향 바라보기
@@ -198,7 +224,14 @@ public class Enemy : MonoBehaviour, IDamageable
 
         // 플레이어가 위에 있는지 확인
         float heightDifference = player.position.y - transform.position.y;
-        if (heightDifference < jumpHeightThreshold) return false;
+
+        // 플레이어가 점프 가능한 높이 범위 안에 있는지 확인
+        // - 너무 낮으면 점프할 필요 없음
+        // - 너무 높으면 점프해도 도달 불가
+        if (heightDifference < jumpHeightThreshold || heightDifference > maxJumpHeight)
+        {
+            return false;
+        }
 
         // 앞에 벽이나 장애물이 있는지 확인
         float direction = Mathf.Sign(player.position.x - transform.position.x);
@@ -207,7 +240,7 @@ public class Enemy : MonoBehaviour, IDamageable
 
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, rayDirection, jumpCheckDistance, obstacleLayer);
 
-        // 벽이 있거나 플레이어가 충분히 위에 있으면 점프
+        // 벽이 있으면 점프 (벽을 넘어가기 위해)
         if (hit.collider != null)
         {
             return true;
@@ -242,9 +275,11 @@ public class Enemy : MonoBehaviour, IDamageable
         RaycastHit2D hit = Physics2D.Raycast(
             transform.position,
             Vector2.down,
-            0.5f,
+            2f,
             LayerMask.GetMask("Platform")
         );
+
+        Debug.Log($"Down {heightDifference} {hit.collider != null}");
 
         return hit.collider != null;
     }
