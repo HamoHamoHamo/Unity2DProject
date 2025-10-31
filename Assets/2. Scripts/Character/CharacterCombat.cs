@@ -168,6 +168,28 @@ public class CharacterCombat : MonoBehaviour
             if (alreadyHitTargets.Contains(target))
                 continue;
 
+            // Player일 때만 Bullet 튕겨내기 시도
+            if (gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                Debug.Log("튕기기");
+                Bullet bullet = target.GetComponent<Bullet>();
+                if (bullet != null)
+                {
+                    Debug.Log("튕기기2");
+                    // Bullet의 현재 방향을 가져와서 반대로 튕겨냄
+                    Rigidbody2D bulletRb = target.GetComponent<Rigidbody2D>();
+                    if (bulletRb != null)
+                    {
+                        Debug.Log("튕기기3");
+                        Vector2 deflectDirection = -bulletRb.velocity.normalized;
+                        bullet.Deflect(deflectDirection);
+                        alreadyHitTargets.Add(target); // 중복 튕겨내기 방지
+                        Debug.Log($"Player가 Bullet을 튕겨냈습니다!");
+                        continue; // Bullet은 데미지 대상이 아니므로 다음으로
+                    }
+                }
+            }
+
             // 구르기 중인지 확인
             CharacterMovement targetMovement = target.GetComponent<CharacterMovement>();
             if (targetMovement != null && targetMovement.IsDodging)

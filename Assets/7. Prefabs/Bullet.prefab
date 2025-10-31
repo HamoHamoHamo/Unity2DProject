@@ -195,3 +195,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 20
   lifetime: 3
+  deflectedColor: {r: 1, g: 0.45709407, b: 0, a: 1}

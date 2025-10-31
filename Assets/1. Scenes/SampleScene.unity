@@ -4476,13 +4476,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 0
-  attackCooldown: 0.7
+  attackCooldown: 0.5
   attackDamage: 1
   attackArea: {fileID: 1841739333}
   attackBoxSize: {x: 2, y: 1}
   targetLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 2560
   bulletPrefab: {fileID: 0}
   bulletSpawnPoint: {fileID: 0}
   bulletSpeed: 10
@@ -4501,7 +4501,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   dodgeForce: 1.1
-  dodgeTime: 0.6
+  dodgeTime: 0.45
   jumpForce: 12
   fallMultiplier: 2.5
   lowJumpMultiplier: 2

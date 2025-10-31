@@ -9,7 +9,7 @@ public class CharacterMovement : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5.0f;
     [SerializeField] private float dodgeForce = 1.1f;
-    [SerializeField] private float dodgeTime = 0.6f;
+    [SerializeField] private float dodgeTime = 0.4f;
     [SerializeField] private float jumpForce = 15.0f;
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;

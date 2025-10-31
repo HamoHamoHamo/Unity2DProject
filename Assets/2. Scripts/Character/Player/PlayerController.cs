@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         }
 
         // 공격
-        if (Input.GetMouseButtonDown(0) && combat.CanAttack)
+        if (Input.GetMouseButtonDown(0) && combat.CanAttack && !movement.IsDodging)
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos.z = 0;
