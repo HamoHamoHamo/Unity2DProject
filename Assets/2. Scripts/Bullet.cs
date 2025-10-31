@@ -52,7 +52,6 @@ public class Bullet : MonoBehaviour
             if (damageable != null)
             {
                 damageable.TakeDamage(damage);
-                Debug.Log($"Bullet이 플레이어에게 {damage} 데미지!");
             }
 
             ReturnToPool();

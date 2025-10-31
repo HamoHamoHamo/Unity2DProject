@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c305e85a22f1e4368ac5bb7a4110d236, type: 3}
   m_Name: SpawnConfig
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 0}
+  enemyPrefabs:
+  - {fileID: 8246112904104871102, guid: c9baf886ebf00402eae871488f5c27fb, type: 3}
+  - {fileID: 5840637472152741071, guid: 3da68d3ab5beb40b9ad5e82dd8bb4fc7, type: 3}
   enemyPoolSize: 20
-  enemySpawnInterval: 5
+  enemySpawnInterval: 3
   maxEnemies: 10
   throwableItemPrefab: {fileID: 8907007934899841631, guid: bad4d6462775b43e09869be1a88c1425, type: 3}
   throwableItemPoolSize: 10
@@ -22,4 +24,4 @@ MonoBehaviour:
   maxThrowableItems: 3
   bulletPrefab: {fileID: 7470246796705407974, guid: f38da1e71abeb49618d9b9ac4baeab34, type: 3}
   bulletPoolSize: 20
-  minSpawnDistance: 3
+  minSpawnDistance: 5

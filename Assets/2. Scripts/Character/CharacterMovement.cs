@@ -16,7 +16,7 @@ public class CharacterMovement : MonoBehaviour
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckRadius = 0.15f;
+    [SerializeField] private float groundCheckRadius = 0.25f;
     [SerializeField] private LayerMask groundLayer;
 
     private Rigidbody2D rb;
@@ -25,6 +25,7 @@ public class CharacterMovement : MonoBehaviour
     private bool isGrounded;
     private bool isDodging;
     private bool isDropping;
+    private bool isAttacking;
     private bool isFacingRight = true;
 
     private float currentMoveInput;
@@ -56,19 +57,22 @@ public class CharacterMovement : MonoBehaviour
 
     private void ApplyMovement()
     {
-        if (!isDodging)
+        if (!isDodging && !isAttacking)
         {
             rb.velocity = new Vector2(currentMoveInput * moveSpeed, rb.velocity.y);
         }
 
         // 자동 회전
-        if (currentMoveInput > 0 && !isFacingRight)
+        if (!isAttacking)
         {
-            Flip();
-        }
-        else if (currentMoveInput < 0 && isFacingRight)
-        {
-            Flip();
+            if (currentMoveInput > 0 && !isFacingRight)
+            {
+                Flip();
+            }
+            else if (currentMoveInput < 0 && isFacingRight)
+            {
+                Flip();
+            }
         }
     }
 
@@ -109,7 +113,7 @@ public class CharacterMovement : MonoBehaviour
     /// </summary>
     public void SetMoveInput(float input)
     {
-        if (!isDodging)
+        if (!isDodging || !isAttacking)
         {
             currentMoveInput = input;
         }
@@ -120,7 +124,7 @@ public class CharacterMovement : MonoBehaviour
     /// </summary>
     public void RequestJump()
     {
-        if (!isDodging)
+        if (!isDodging && isGrounded)
         {
             jumpRequested = true;
         }
@@ -211,6 +215,14 @@ public class CharacterMovement : MonoBehaviour
         {
             Flip();
         }
+    }
+
+    /// <summary>
+    /// 공격 중 상태 설정 (공격 중에는 이동 제어를 무시)
+    /// </summary>
+    public void SetAttacking(bool attacking)
+    {
+        isAttacking = attacking;
     }
 
     void OnDrawGizmosSelected()

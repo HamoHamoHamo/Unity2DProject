@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -37,6 +38,10 @@ public class CharacterCombat : MonoBehaviour
     private float attackTimer;
     private GameObject fireTarget;
 
+    // 공격 판정 지속 관련
+    private bool isPerformingAttack = false;
+    private HashSet<Collider2D> hitTargetsInCurrentAttack = new HashSet<Collider2D>();
+
     public bool CanAttack => canAttack;
 
     void Awake()
@@ -48,6 +53,7 @@ public class CharacterCombat : MonoBehaviour
     void Update()
     {
         UpdateAttackCooldown();
+        UpdateAttackDetection();
     }
 
     private void UpdateAttackCooldown()
@@ -59,6 +65,17 @@ public class CharacterCombat : MonoBehaviour
             {
                 canAttack = true;
             }
+        }
+    }
+
+    /// <summary>
+    /// 공격 판정 지속 처리 - Animation Event로 시작/종료 제어
+    /// </summary>
+    private void UpdateAttackDetection()
+    {
+        if (isPerformingAttack)
+        {
+            PerformAttackDetection(hitTargetsInCurrentAttack);
         }
     }
 
@@ -90,23 +107,41 @@ public class CharacterCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// Animation Event에서 호출 - 슬래시 이펙트 재생 또는 Bullet 발사
+    /// Animation Event에서 호출 - 슬래시 이펙트 재생 및 공격 판정 시작
     /// </summary>
     public void OnSlashFrame()
     {
+        // 슬래시 이펙트 재생 (옵션)
         if (slashEffect != null)
         {
             slashEffect.PlaySlashEffect();
         }
 
-        // 근접 공격 판정
-        PerformAttackDetection();
+        // 공격 판정 시작
+        isPerformingAttack = true;
+        hitTargetsInCurrentAttack.Clear();
     }
 
     /// <summary>
-    /// 공격 판정 실행 - 박스 범위 내 적 감지 및 데미지
+    /// Animation Event에서 호출 - 공격 판정 종료 및 슬래시 이펙트 종료
     /// </summary>
-    private void PerformAttackDetection()
+    public void OnSlashEndFrame()
+    {
+        // 공격 판정 종료
+        isPerformingAttack = false;
+        hitTargetsInCurrentAttack.Clear();
+
+        // 슬래시 이펙트 종료 (옵션)
+        if (slashEffect != null)
+        {
+            slashEffect.StopSlashEffect();
+        }
+    }
+
+    /// <summary>
+    /// 공격 판정 실행 - 박스 범위 내 적 감지 및 데미지 (중복 타격 방지)
+    /// </summary>
+    private void PerformAttackDetection(HashSet<Collider2D> alreadyHitTargets)
     {
         if (attackArea == null)
         {
@@ -122,13 +157,15 @@ public class CharacterCombat : MonoBehaviour
             targetLayer               // 대상 레이어
         );
 
-        Debug.Log($"공격 판정: {hitTargets.Length}개 감지");
-
         // 감지된 대상에게 데미지
         foreach (Collider2D target in hitTargets)
         {
             // 자기 자신은 제외
             if (target.transform == transform || target.transform.root == transform.root)
+                continue;
+
+            // 이미 맞은 대상은 제외 (중복 타격 방지)
+            if (alreadyHitTargets.Contains(target))
                 continue;
 
             // 구르기 중인지 확인
@@ -144,7 +181,7 @@ public class CharacterCombat : MonoBehaviour
             if (damageable != null)
             {
                 damageable.TakeDamage(attackDamage);
-                Debug.Log($"{gameObject.name}이(가) {target.name}에게 {attackDamage} 데미지!");
+                alreadyHitTargets.Add(target); // 타격한 대상 기록
             }
         }
     }
@@ -156,6 +193,15 @@ public class CharacterCombat : MonoBehaviour
     {
         if (target == null) return false;
         return Vector2.Distance(transform.position, target.position) <= range;
+    }
+
+    /// <summary>
+    /// 공격 판정 강제 중단 (사망, 스턴, 넉백 등에서 호출)
+    /// </summary>
+    public void StopAttack()
+    {
+        isPerformingAttack = false;
+        hitTargetsInCurrentAttack.Clear();
     }
 
     /// <summary>
@@ -202,8 +248,6 @@ public class CharacterCombat : MonoBehaviour
 
         // Bullet 초기화 및 발사
         bullet.Initialize(direction, attackDamage);
-
-        Debug.Log($"[CharacterCombat] Bullet 발사! 방향: {direction}");
     }
 
     // Gizmos로 공격 범위 시각화
