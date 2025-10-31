@@ -7,7 +7,7 @@ public class SpawnManager : MonoBehaviour
 {
     private List<Tilemap> walkableTilemaps = new List<Tilemap>();
 
-    private Enemy enemyPrefab;
+    private List<Enemy> enemyPrefabs;
     private int enemyPoolSize;
     private float enemySpawnInterval;
     private int maxEnemies;
@@ -48,7 +48,7 @@ public class SpawnManager : MonoBehaviour
         }
 
         walkableTilemaps = tilemaps;
-        enemyPrefab = config.enemyPrefab;
+        enemyPrefabs = config.enemyPrefabs;
         throwableItemPrefab = config.throwableItemPrefab;
         bulletPrefab = config.bulletPrefab;
 
@@ -78,9 +78,12 @@ public class SpawnManager : MonoBehaviour
         CacheWalkableTiles();
 
         // PoolManager에 풀 생성 요청
-        if (enemyPrefab != null)
+        if (enemyPrefabs != null)
         {
-            Managers.Pool.CreatePool(enemyPrefab, enemyPoolSize);
+            foreach (Enemy enemyPrefab in enemyPrefabs)
+            {
+                Managers.Pool.CreatePool(enemyPrefab, enemyPoolSize);
+            }
             Debug.Log($"[SpawnManager] Enemy Pool 생성 완료 (크기: {enemyPoolSize})");
         }
 
@@ -104,15 +107,15 @@ public class SpawnManager : MonoBehaviour
         if (!isInitialized || !isSpawning || playerTransform == null) return;
 
         // 적 스폰 타이머
-        // enemySpawnTimer += Time.deltaTime;
-        // if (enemySpawnTimer >= enemySpawnInterval)
-        // {
-        //     if (CountActiveObjects("Enemy") < maxEnemies)
-        //     {
-        //         SpawnEnemy();
-        //     }
-        //     enemySpawnTimer = 0f;
-        // }
+        enemySpawnTimer += Time.deltaTime;
+        if (enemySpawnTimer >= enemySpawnInterval)
+        {
+            if (CountActiveObjects("Enemy") < maxEnemies)
+            {
+                SpawnEnemy();
+            }
+            enemySpawnTimer = 0f;
+        }
 
         // 아이템 스폰 타이머
         throwableItemSpawnTimer += Time.deltaTime;
@@ -170,9 +173,12 @@ public class SpawnManager : MonoBehaviour
     /// </summary>
     void SpawnEnemy()
     {
-        if (enemyPrefab == null) return;
+        if (enemyPrefabs == null || enemyPrefabs.Count == 0) return;
 
-        MonoBehaviour enemy = Managers.Pool.GetFromPool(enemyPrefab);
+        // 랜덤으로 Enemy 타입 선택
+        Enemy selectedEnemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
+
+        MonoBehaviour enemy = Managers.Pool.GetFromPool(selectedEnemyPrefab);
 
         if (enemy != null)
         {

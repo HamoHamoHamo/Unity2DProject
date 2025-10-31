@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "SpawnConfig", menuName = "Config/Spawn Config")]
 public class SpawnConfig : ScriptableObject
 {
     [Header("Enemy Settings")]
-    public Enemy enemyPrefab;
+    public List<Enemy> enemyPrefabs;
     public int enemyPoolSize = 20;
-    public float enemySpawnInterval = 2f;
+    public float enemySpawnInterval = 3f;
     public int maxEnemies = 10;
 
     [Header("ThrowableItem Settings")]
@@ -20,5 +21,5 @@ public class SpawnConfig : ScriptableObject
     public int bulletPoolSize = 50;
 
     [Header("General Settings")]
-    public float minSpawnDistance = 3f;
+    public float minSpawnDistance = 4f;
 }
