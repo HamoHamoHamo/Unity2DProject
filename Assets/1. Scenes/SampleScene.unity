@@ -176,7 +176,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d4bce21d51ee4720ae1a78f4ecf358f, type: 2}
+  - {fileID: 2100000, guid: ffa0517be38ea4ce2b3ac739cdf1af82, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1350,7 +1350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &766610241
 Transform:
   m_ObjectHideFlags: 0
@@ -4477,7 +4477,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 0
   attackCooldown: 0.5
-  attackDamage: 1
+  attackDamage: 0
   attackArea: {fileID: 1841739333}
   attackBoxSize: {x: 2, y: 1}
   targetLayer:
@@ -4487,6 +4487,7 @@ MonoBehaviour:
   bulletSpawnPoint: {fileID: 0}
   bulletSpeed: 10
   slashEffect: {fileID: 766610244}
+  groggyDuration: 0.7
 --- !u!114 &1459973111
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4505,6 +4506,7 @@ MonoBehaviour:
   jumpForce: 12
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
+  KnockbackForce: 5
   groundCheck: {fileID: 1237764220}
   groundCheckRadius: 0.25
   groundLayer:

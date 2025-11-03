@@ -13,6 +13,7 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField] private float jumpForce = 15.0f;
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
+    [SerializeField] private float KnockbackForce = 5f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -25,7 +26,7 @@ public class CharacterMovement : MonoBehaviour
     private bool isGrounded;
     private bool isDodging;
     private bool isDropping;
-    private bool isAttacking;
+    private bool canMove = true;
     private bool isFacingRight = true;
 
     private float currentMoveInput;
@@ -57,13 +58,13 @@ public class CharacterMovement : MonoBehaviour
 
     private void ApplyMovement()
     {
-        if (!isDodging && !isAttacking)
+        if (!isDodging && canMove)
         {
             rb.velocity = new Vector2(currentMoveInput * moveSpeed, rb.velocity.y);
         }
 
         // 자동 회전
-        if (!isAttacking)
+        if (canMove)
         {
             if (currentMoveInput > 0 && !isFacingRight)
             {
@@ -113,7 +114,7 @@ public class CharacterMovement : MonoBehaviour
     /// </summary>
     public void SetMoveInput(float input)
     {
-        if (!isDodging || !isAttacking)
+        if (!isDodging && canMove)
         {
             currentMoveInput = input;
         }
@@ -220,9 +221,13 @@ public class CharacterMovement : MonoBehaviour
     /// <summary>
     /// 공격 중 상태 설정 (공격 중에는 이동 제어를 무시)
     /// </summary>
-    public void SetAttacking(bool attacking)
+    public void CanMove(bool can)
     {
-        isAttacking = attacking;
+        canMove = can;
+        if (!can)
+        {
+            currentMoveInput = 0;
+        }
     }
 
     void OnDrawGizmosSelected()
@@ -230,5 +235,27 @@ public class CharacterMovement : MonoBehaviour
         if (groundCheck == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+    }
+
+    public void Knockback()
+    {
+        StartCoroutine(KnockbackCo());
+    }
+
+    private IEnumerator KnockbackCo()
+    {
+        currentMoveInput = 0;
+
+        // 넉백 방향으로 velocity 설정
+        Vector2 direction = isFacingRight ? Vector2.left : Vector2.right;
+        rb.velocity = new Vector2(direction.x * KnockbackForce, 0);
+        rb.velocity += Vector2.up * KnockbackForce / 2;
+
+        // 넉백 지속 시간 (짧게!)
+        yield return new WaitForSeconds(0.15f);
+
+        // X축 속도 멈춤 (Y축은 중력에 맡김)
+        rb.velocity = new Vector2(0, rb.velocity.y);
+
     }
 }

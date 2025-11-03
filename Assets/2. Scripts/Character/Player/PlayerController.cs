@@ -76,10 +76,10 @@ public class PlayerController : MonoBehaviour, IDamageable
             }
             slashEffectDegree.transform.rotation = Quaternion.Euler(0, 0, angle);
 
+            combat.Attack(attackDirection);
+
             // 공격 시 대시 이동
             StartCoroutine(AttackDashCo(attackDirection));
-
-            combat.Attack(attackDirection);
         }
 
         // 투사체
@@ -155,7 +155,7 @@ public class PlayerController : MonoBehaviour, IDamageable
     private IEnumerator AttackDashCo(Vector2 direction)
     {
         // 이동 제어 차단
-        movement.SetAttacking(true);
+        movement.CanMove(false);
 
         // 마우스 방향으로 velocity 설정
         rb.velocity = new Vector2(direction.x * attackDashForce, direction.y * attackDashForce);
@@ -164,7 +164,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         yield return new WaitForSeconds(attackDashTime);
 
         // 이동 제어 복구
-        movement.SetAttacking(false);
+        movement.CanMove(true);
     }
 
     private void Die()
