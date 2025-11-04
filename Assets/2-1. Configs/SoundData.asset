@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c4ac83222b44bc58249089529feb2e, type: 3}
+  m_Name: SoundData
+  m_EditorClassIdentifier: 
+  bgmSounds:
+  - name: Main
+    clip: {fileID: 8300000, guid: 088a31987a5fd4db1a1b8ffe17deed47, type: 3}
+    volume: 1
+  defaultBGMVolume: 0.3
+  sfxSounds:
+  - name: PlayerAttack
+    clip: {fileID: 8300000, guid: ece612ced5e4645aaa6ed6b0a8c2ecd2, type: 3}
+    volume: 1
+  - name: PlayerDie
+    clip: {fileID: 8300000, guid: 2f355508212494d4b8e53ad1c96f74f7, type: 3}
+    volume: 1
+  - name: Throw
+    clip: {fileID: 8300000, guid: 5021c05c1f67c4fd09fb478398d83846, type: 3}
+    volume: 1
+  - name: EnemyHit
+    clip: {fileID: 8300000, guid: 05701316a40c64df9ba5e9356a5ace09, type: 3}
+    volume: 0.51
+  - name: RangedEnemyAttack
+    clip: {fileID: 8300000, guid: 00b1a15b4219e44b6831f40518210d5e, type: 3}
+    volume: 0.7
+  - name: MeleeEnemyAttack
+    clip: {fileID: 8300000, guid: 0e5f4f24c857c4187af0be5aa7444b73, type: 3}
+    volume: 0.7
+  - name: Groggy
+    clip: {fileID: 8300000, guid: b4625c93229ac47f59b368dd58ca4e54, type: 3}
+    volume: 0.75
+  - name: Jump
+    clip: {fileID: 8300000, guid: fda817aeb5e714452b3906252e29d535, type: 3}
+    volume: 0.3
+  - name: Land
+    clip: {fileID: 8300000, guid: ebe45ba00120d4f4d8777fd95d0a21b5, type: 3}
+    volume: 0.5
+  - name: Dodge
+    clip: {fileID: 8300000, guid: d9b4018db333346bb9ff6239e5fbf9f5, type: 3}
+    volume: 1.2
+  - name: Pickup
+    clip: {fileID: 8300000, guid: 3ed7cc21cbac94b90a4694927629e589, type: 3}
+    volume: 0.7
+  defaultSFXVolume: 1
