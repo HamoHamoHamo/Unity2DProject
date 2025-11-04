@@ -43,6 +43,7 @@ public class Enemy : MonoBehaviour, IDamageable
     private CharacterMovement movement;
     private CharacterCombat combat;
     private Animator anim;
+    private Rigidbody2D rb;
 
     private float lastJumpTime;
     private float lastDropTime;
@@ -68,6 +69,7 @@ public class Enemy : MonoBehaviour, IDamageable
         movement = GetComponent<CharacterMovement>();
         combat = GetComponent<CharacterCombat>();
         anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
 
         // 플레이어 자동 찾기
         if (player == null)
@@ -218,6 +220,8 @@ public class Enemy : MonoBehaviour, IDamageable
         // 3. 공격 실행
         if (player != null) // 딜레이 중 플레이어가 사라질 수도 있음
         {
+            if (enemyType == EnemyType.Melee)
+                Managers.Sound.Play("MeleeEnemyAttack");
             combat.AttackTowards(player);
         }
 
@@ -230,6 +234,7 @@ public class Enemy : MonoBehaviour, IDamageable
 
     public void FireBullet()
     {
+        Managers.Sound.Play("RangedEnemyAttack");
         combat.FireBullet();
     }
 
@@ -299,7 +304,6 @@ public class Enemy : MonoBehaviour, IDamageable
             LayerMask.GetMask("Platform")
         );
 
-        Debug.Log($"Down {heightDifference} {hit.collider != null}");
 
         return hit.collider != null;
     }
@@ -309,30 +313,31 @@ public class Enemy : MonoBehaviour, IDamageable
     /// </summary>
     public void Die()
     {
+        Debug.Log($"isdead {isDead}");
         if (!isDead)
         {
-            isDead = true;
-            // 실행 중인 코루틴 정리
             StopAllCoroutines();
-            isAttacking = false;
-
-            currentState = EnemyState.Dead;
-            movement.SetMoveInput(0);
-
-            // TODO: 사망 애니메이션, 점수 추가, 오브젝트 풀로 반환 등
             StartCoroutine(DieCo());
-
-
         }
     }
 
     private IEnumerator DieCo()
     {
+        isDead = true;
+        isAttacking = false;
+        currentState = EnemyState.Dead;
+
+        combat.EnterDie();
+
+
         anim.SetTrigger("Die");
+        Managers.Sound.Play("EnemyHit");
 
         yield return new WaitForSeconds(1f);
 
         gameObject.SetActive(false);
+        Managers.Pool.ReturnPool(this, false);
+        isDead = false;
 
     }
 

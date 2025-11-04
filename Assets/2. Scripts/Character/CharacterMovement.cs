@@ -27,6 +27,7 @@ public class CharacterMovement : MonoBehaviour
     private Animator anim;
 
     private bool isGrounded;
+    private bool wasGrounded;  // 이전 프레임의 착지 상태 (착지 사운드용)
     private bool isDodging;
     private bool isDropping;
     private bool canMove = true;
@@ -66,7 +67,17 @@ public class CharacterMovement : MonoBehaviour
 
     private void UpdateGroundCheck()
     {
+        // 이전 상태 저장
+        wasGrounded = isGrounded;
+
+        // 현재 착지 상태 체크
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+        // 착지 감지: 공중 → 땅 + 하강 중
+        if (!wasGrounded && isGrounded && rb.velocity.y <= 0)
+        {
+            Managers.Sound.Play("Land");
+        }
     }
 
     private void ApplyMovement()
@@ -95,6 +106,7 @@ public class CharacterMovement : MonoBehaviour
         // 점프 실행
         if (jumpRequested && isGrounded && !isDodging)
         {
+            Managers.Sound.Play("Jump");
             rb.velocity = new Vector2(rb.velocity.x, 0f);
             rb.velocity += Vector2.up * jumpForce;
             jumpRequested = false;
@@ -159,6 +171,7 @@ public class CharacterMovement : MonoBehaviour
 
         if (anim != null)
         {
+            Managers.Sound.Play("Dodge");
             anim.SetTrigger("Dodge");
         }
 

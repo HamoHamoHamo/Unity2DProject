@@ -37,7 +37,7 @@ public class ObjectPool<T> where T : MonoBehaviour
     public void Enqueue(T instance, bool isActive = false)
     {
         if (instance == null) return;
-
+        Debug.Log($"Enqueue {isActive}");
         instance.gameObject.SetActive(isActive);
         pool.Enqueue(instance);
     }

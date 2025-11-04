@@ -312,6 +312,7 @@ public class CharacterCombat : MonoBehaviour
             anim.ResetTrigger("Attack");
             anim.SetBool("IsGroggy", true);
             // Play를 사용하면 더 확실하게 즉시 재생됩니다
+            Managers.Sound.Play("Groggy");
             anim.Play("Groggy", 0, 0f); // 레이어 0, 시작부터 재생
         }
 
@@ -349,6 +350,17 @@ public class CharacterCombat : MonoBehaviour
         }
 
         Debug.Log($"{gameObject.name}의 그로기 상태 해제!");
+    }
+
+    public void EnterDie()
+    {
+        StopAllCoroutines();
+        // 그로기 해제
+
+        isGroggy = false;
+        canAttack = false;
+        anim.SetBool("IsGroggy", false);
+        movement.CanMove(false);
     }
 
     /// <summary>

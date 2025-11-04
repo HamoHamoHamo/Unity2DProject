@@ -8,12 +8,12 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour, IDamageable
 {
     [Header("Attack")]
-    [SerializeField] private float attackDashForce = 5f;
+    [SerializeField] private float attackDashForce = 7f;
     [SerializeField] private float attackDashTime = 0.3f;
 
     [Header("Item System")]
     [SerializeField] private Transform itemHoldPoint;
-    [SerializeField] private float itemPickupRange = 1f;
+    [SerializeField] private float itemPickupRange = 2f;
     [SerializeField] private LayerMask throwableItemLayer;
     [SerializeField] private GameObject slashEffectDegree;
 
@@ -86,6 +86,7 @@ public class PlayerController : MonoBehaviour, IDamageable
             slashEffectDegree.transform.rotation = Quaternion.Euler(0, 0, angle);
 
             combat.Attack(attackDirection);
+            Managers.Sound.Play("PlayerAttack");
 
             // 공격 시 대시 이동
             StartCoroutine(AttackDashCo(attackDirection));
@@ -147,6 +148,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         {
             heldItem = nearestItem;
             heldItem.Pickup(itemHoldPoint, this);
+            Managers.Sound.Play("Pickup");
         }
     }
 
@@ -159,6 +161,7 @@ public class PlayerController : MonoBehaviour, IDamageable
 
         heldItem.Throw(throwDirection);
         heldItem = null;
+        Managers.Sound.Play("Throw");
     }
 
     private IEnumerator AttackDashCo(Vector2 direction)
@@ -168,7 +171,7 @@ public class PlayerController : MonoBehaviour, IDamageable
 
         // 마우스 방향으로 velocity 설정
         rb.velocity = new Vector2(direction.x * attackDashForce, direction.y * attackDashForce);
-        rb.velocity += Vector2.up * attackDashForce / 2;
+        // rb.velocity += Vector2.up * attackDashForce / 2;
 
         yield return new WaitForSeconds(attackDashTime);
 
@@ -180,10 +183,12 @@ public class PlayerController : MonoBehaviour, IDamageable
     {
         if (!isDead)
         {
+            combat.EnterDie();
             StopAllCoroutines();
 
-            Debug.Log("플레이어 사망");
+            Debug.Log("PlayerDie");
             isDead = true;
+            Managers.Sound.Play("PlayerDie");
             anim.SetTrigger("Die");
 
             // this.enabled = false;

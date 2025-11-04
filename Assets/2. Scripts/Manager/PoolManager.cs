@@ -63,6 +63,7 @@ public class PoolManager : MonoBehaviour
 
         if (pool != null)
         {
+            Debug.Log($"TESt {isActive}");
             pool.Enqueue(instance, isActive);
         }
     }

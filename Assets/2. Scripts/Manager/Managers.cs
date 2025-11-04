@@ -11,6 +11,7 @@ public class Managers : MonoBehaviour
     private static UIManager _ui;
     private static SpawnManager _spawn;
     private static TimeSlowManager _timeSlow;
+    private static SoundManager _sound;
 
     private static void Init()
     {
@@ -75,6 +76,15 @@ public class Managers : MonoBehaviour
         {
             CreateManager(ref _timeSlow, "TimeSlowManager");
             return _timeSlow;
+        }
+    }
+
+    public static SoundManager Sound
+    {
+        get
+        {
+            CreateManager(ref _sound, "SoundManager");
+            return _sound;
         }
     }
 }

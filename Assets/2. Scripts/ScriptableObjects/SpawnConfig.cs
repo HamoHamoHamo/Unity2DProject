@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SpawnConfig", menuName = "Config/Spawn Config")]
+[CreateAssetMenu(fileName = "SpawnConfig", menuName = "ScriptableObjects/Spawn Config")]
 public class SpawnConfig : ScriptableObject
 {
     [Header("Enemy Settings")]
