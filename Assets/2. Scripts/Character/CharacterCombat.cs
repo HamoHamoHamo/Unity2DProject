@@ -367,11 +367,6 @@ public class CharacterCombat : MonoBehaviour
             // 플레이어 찾기
             fireTarget = GameObject.FindGameObjectWithTag("Player");
         }
-        else if (gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            // TODO 튕겨내기
-            fireTarget = null;
-        }
 
         if (fireTarget == null)
             return;
@@ -385,11 +380,14 @@ public class CharacterCombat : MonoBehaviour
         }
 
         // Bullet 위치 설정 (발사 지점이 있으면 사용, 없으면 자기 위치)
-        Vector3 spawnPosition = bulletSpawnPoint != null ? bulletSpawnPoint.position : transform.position;
+        Vector2 spawnPosition = bulletSpawnPoint != null ? bulletSpawnPoint.position : transform.position;
         bullet.transform.position = spawnPosition;
 
         // 플레이어 방향 계산
-        Vector2 direction = (fireTarget.transform.position - spawnPosition).normalized;
+        float upwardOffset = 1f;
+        Vector2 targetPosition = (Vector2)fireTarget.transform.position + Vector2.up * upwardOffset;
+        Vector2 direction = (targetPosition - spawnPosition).normalized;
+
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         bullet.transform.rotation = Quaternion.Euler(0, 0, angle);
 
@@ -407,7 +405,7 @@ public class CharacterCombat : MonoBehaviour
         Gizmos.matrix = Matrix4x4.TRS(
             attackArea.position,
             attackArea.rotation,
-            Vector3.one  // ← 이대로 두면 됨!
+            Vector3.one
         );
         Gizmos.DrawCube(Vector3.zero, new Vector3(attackBoxSize.x, attackBoxSize.y, 0.1f));
 

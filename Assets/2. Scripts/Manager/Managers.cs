@@ -10,6 +10,7 @@ public class Managers : MonoBehaviour
     private static GameManager _game;
     private static UIManager _ui;
     private static SpawnManager _spawn;
+    private static TimeSlowManager _timeSlow;
 
     private static void Init()
     {
@@ -65,6 +66,15 @@ public class Managers : MonoBehaviour
         {
             CreateManager(ref _spawn, "SpawnManager");
             return _spawn;
+        }
+    }
+
+    public static TimeSlowManager TimeSlow
+    {
+        get
+        {
+            CreateManager(ref _timeSlow, "TimeSlowManager");
+            return _timeSlow;
         }
     }
 }

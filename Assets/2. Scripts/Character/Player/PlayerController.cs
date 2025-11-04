@@ -34,6 +34,15 @@ public class PlayerController : MonoBehaviour, IDamageable
         rb = GetComponent<Rigidbody2D>();
     }
 
+    void Start()
+    {
+        // 시간 감속 튜토리얼 메시지 (선택 사항)
+        if (Managers.TimeSlow != null)
+        {
+            Debug.Log("Shift 키를 눌러 시간 감속을 사용하세요!");
+        }
+    }
+
     void Update()
     {
         HandleInput();

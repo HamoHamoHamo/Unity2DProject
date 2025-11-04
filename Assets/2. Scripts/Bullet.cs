@@ -120,10 +120,10 @@ public class Bullet : MonoBehaviour
                 Debug.Log("투사체 플레이어 적중");
                 // 데미지 처리
                 IDamageable damageable = other.GetComponent<IDamageable>();
-                // if (damageable != null)
-                // {
-                //     damageable.TakeDamage(damage);
-                // }
+                if (damageable != null)
+                {
+                    damageable.TakeDamage(damage);
+                }
 
                 ReturnToPool();
             }

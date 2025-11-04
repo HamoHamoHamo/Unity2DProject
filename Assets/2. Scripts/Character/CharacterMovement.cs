@@ -20,6 +20,9 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.25f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Time Slow")]
+    [SerializeField] private bool ignoreTimeScale = false;  // 시간 감속 무시 여부 (플레이어는 true)
+
     private Rigidbody2D rb;
     private Animator anim;
 
@@ -41,6 +44,16 @@ public class CharacterMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+    }
+
+    void Start()
+    {
+        // 플레이어는 시간 감속의 영향을 받지 않도록 설정
+        if (ignoreTimeScale && gameObject.CompareTag("Player"))
+        {
+            // Rigidbody2D의 Interpolate를 설정하여 부드러운 움직임 보장
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        }
     }
 
     void FixedUpdate()
