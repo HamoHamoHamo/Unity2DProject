@@ -8,7 +8,6 @@ public class Managers : MonoBehaviour
     private static GameObject _root;
     private static PoolManager _pool;
     private static GameManager _game;
-    private static UIManager _ui;
     private static SpawnManager _spawn;
     private static TimeSlowManager _timeSlow;
     private static SoundManager _sound;
@@ -49,15 +48,6 @@ public class Managers : MonoBehaviour
         {
             CreateManager(ref _game, "GameManager");
             return _game;
-        }
-    }
-
-    public static UIManager UI
-    {
-        get
-        {
-            CreateManager(ref _ui, "UIManager");
-            return _ui;
         }
     }
 

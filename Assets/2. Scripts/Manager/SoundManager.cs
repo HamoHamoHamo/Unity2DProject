@@ -58,24 +58,41 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-        // 기본 볼륨 설정
         bgmVolume = soundData.defaultBGMVolume;
         sfxVolume = soundData.defaultSFXVolume;
 
-        // BGM 전용 AudioSource
-        bgmSource = gameObject.AddComponent<AudioSource>();
-        bgmSource.loop = true;
-        bgmSource.volume = bgmVolume;
-        bgmSource.playOnAwake = false;
+        // BGM 전용 AudioSource (없을 때만 추가)
+        if (bgmSource == null)
+        {
+            bgmSource = gameObject.AddComponent<AudioSource>();
+            bgmSource.loop = true;
+            bgmSource.playOnAwake = false;
+        }
+        bgmSource.volume = bgmVolume; // 볼륨 설정은 매번 해도 OK
+        bgmSource.pitch = 1f; // 피치 초기화
 
-        // 효과음 전용 AudioSource
-        sfxSource = gameObject.AddComponent<AudioSource>();
-        sfxSource.loop = false;
-        sfxSource.volume = sfxVolume;
-        sfxSource.playOnAwake = false;
+        // 효과음 전용 AudioSource (없을 때만 추가)
+        if (sfxSource == null)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.loop = false;
+            sfxSource.playOnAwake = false;
+        }
+        sfxSource.volume = sfxVolume; // 볼륨 설정은 매번 해도 OK
+        sfxSource.pitch = 1f; // 피치 초기화
 
-        // 슬로우 모션 사운드용 AudioSource 미리 생성
-        slowMotionSources.Clear();
+        // --- 슬로우 모션 사운드 ---
+        // 이 부분은 중복 생성을 막기 위해, 기존 것을 먼저 파괴
+        foreach (AudioSource source in slowMotionSources)
+        {
+            if (source != null)
+            {
+                Destroy(source);
+            }
+        }
+        slowMotionSources.Clear(); // 리스트 비우기
+
+        // 새로 생성
         foreach (SoundData.Sound sound in soundData.slowMotionSounds)
         {
             if (sound.clip != null)
@@ -312,5 +329,22 @@ public class SoundManager : MonoBehaviour
         {
             sfxSource.pitch = pitch;
         }
+    }
+
+    /// <summary>
+    /// 모든 재생 중인 사운드를 정지 (씬 리셋용)
+    /// </summary>
+    public void StopAllSounds()
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.Stop();
+        }
+        if (sfxSource != null)
+        {
+            sfxSource.Stop();
+        }
+
+        StopSlowMotionSounds();
     }
 }

@@ -8,27 +8,14 @@ public class PoolManager : MonoBehaviour
     public static PoolManager Instance { get; private set; }
     private Dictionary<string, object> pools = new Dictionary<string, object>();
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
     public void CreatePool<T>(T prefab, int initCount, Transform parent = null) where T : MonoBehaviour
     {
         if (prefab == null) return;
 
         string key = prefab.name;
         if (pools.ContainsKey(key)) return;
-
-        pools.Add(key, new ObjectPool<T>(prefab, initCount, parent));
+        ObjectPool<T> pool = new ObjectPool<T>(prefab, initCount, parent);
+        pools.Add(key, pool);
     }
 
 
@@ -63,7 +50,6 @@ public class PoolManager : MonoBehaviour
 
         if (pool != null)
         {
-            Debug.Log($"TESt {isActive}");
             pool.Enqueue(instance, isActive);
         }
     }

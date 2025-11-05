@@ -205,7 +205,6 @@ public class CharacterCombat : MonoBehaviour
                         Vector2 deflectDirection = -bulletRb.velocity.normalized;
                         bullet.Deflect(deflectDirection);
                         alreadyHitTargets.Add(target); // 중복 튕겨내기 방지
-                        Debug.Log($"Player가 Bullet을 튕겨냈습니다!");
                         continue; // Bullet은 데미지 대상이 아니므로 다음으로
                     }
                 }
@@ -224,8 +223,6 @@ public class CharacterCombat : MonoBehaviour
                         // 두 공격 박스가 겹치는지 확인
                         if (CheckAttackBoxOverlap(enemyCombat))
                         {
-                            Debug.Log($"공격 충돌! {gameObject.name}와 {target.name} 모두 그로기!");
-
                             // 양쪽 모두 그로기 상태로
                             EnterGroggy();
                             enemyCombat.EnterGroggy();
@@ -241,7 +238,6 @@ public class CharacterCombat : MonoBehaviour
             CharacterMovement targetMovement = target.GetComponent<CharacterMovement>();
             if (targetMovement != null && targetMovement.IsDodging)
             {
-                Debug.Log($"{target.name}이(가) 구르기 중이라 회피!");
                 continue; // 데미지 무시
             }
 
@@ -287,7 +283,6 @@ public class CharacterCombat : MonoBehaviour
         bool overlapX = Mathf.Abs(myCenter.x - otherCenter.x) < (myHalfSize.x + otherHalfSize.x);
         // Y축 겹침 확인
         bool overlapY = Mathf.Abs(myCenter.y - otherCenter.y) < (myHalfSize.y + otherHalfSize.y);
-        // Debug.Log($"{overlapX} {overlapY}");
         // 두 축 모두 겹치면 충돌
         return overlapX && overlapY;
     }
@@ -339,8 +334,6 @@ public class CharacterCombat : MonoBehaviour
             movement.Knockback();
         }
 
-        Debug.Log($"{gameObject.name}이(가) 그로기 상태 진입!");
-
         yield return new WaitForSeconds(groggyDuration);
 
         // 그로기 해제
@@ -352,18 +345,16 @@ public class CharacterCombat : MonoBehaviour
         {
             movement.CanMove(true);
         }
-
-        Debug.Log($"{gameObject.name}의 그로기 상태 해제!");
     }
 
     public void EnterDie()
     {
         StopAllCoroutines();
-        // 그로기 해제
+        anim.ResetTrigger("Attack");
+        anim.SetBool("IsGroggy", false);
 
         isGroggy = false;
         canAttack = false;
-        anim.SetBool("IsGroggy", false);
         movement.CanMove(false);
     }
 
@@ -372,11 +363,6 @@ public class CharacterCombat : MonoBehaviour
     /// </summary>
     public void FireBullet()
     {
-        if (bulletPrefab == null)
-        {
-            Debug.LogWarning("[CharacterCombat] bulletPrefab이 설정되지 않았습니다!");
-            return;
-        }
 
         if (gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {

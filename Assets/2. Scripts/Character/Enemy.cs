@@ -313,7 +313,6 @@ public class Enemy : MonoBehaviour, IDamageable
     /// </summary>
     public void Die()
     {
-        Debug.Log($"isdead {isDead}");
         if (!isDead)
         {
             StopAllCoroutines();
@@ -332,6 +331,7 @@ public class Enemy : MonoBehaviour, IDamageable
 
         anim.SetTrigger("Die");
         Managers.Sound.Play("EnemyHit");
+        Managers.Game.OnEnemyKilled();
 
         yield return new WaitForSeconds(1f);
 

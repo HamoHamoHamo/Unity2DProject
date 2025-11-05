@@ -33,6 +33,7 @@ public class SpawnManager : MonoBehaviour
     public void Initialize(List<Tilemap> tilemaps, SpawnConfig config)
 
     {
+        Debug.Log($"isInitialized {isInitialized}");
         if (isInitialized) return;
 
         if (config == null)
@@ -104,12 +105,15 @@ public class SpawnManager : MonoBehaviour
 
     void Update()
     {
+        Debug.Log($"Test {isSpawning} {playerTransform}");
         if (!isInitialized || !isSpawning || playerTransform == null) return;
 
         // 적 스폰 타이머
         enemySpawnTimer += Time.deltaTime;
         if (enemySpawnTimer >= enemySpawnInterval)
         {
+            Debug.Log(CountActiveObjects("Enemy"));
+            Debug.Log(maxEnemies);
             if (CountActiveObjects("Enemy") < maxEnemies)
             {
                 SpawnEnemy();
@@ -173,6 +177,7 @@ public class SpawnManager : MonoBehaviour
     /// </summary>
     void SpawnEnemy()
     {
+        Debug.Log("SpawnEnemy");
         if (enemyPrefabs == null || enemyPrefabs.Count == 0) return;
 
         // 랜덤으로 Enemy 타입 선택

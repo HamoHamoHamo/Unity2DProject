@@ -41,6 +41,12 @@ public class PlayerController : MonoBehaviour, IDamageable
 
     private void HandleInput()
     {
+        if (isDead && Input.GetKey(KeyCode.R))
+        {
+            Managers.Game.RestartGame();
+        }
+        else if (isDead) return;
+
         // 이동
         float moveInput = Input.GetAxisRaw("Horizontal");
         movement.SetMoveInput(moveInput);
@@ -182,9 +188,8 @@ public class PlayerController : MonoBehaviour, IDamageable
             Managers.Sound.Play("PlayerDie");
             anim.SetTrigger("Die");
 
-            // this.enabled = false;
-
             // TODO: 게임 오버
+            Managers.Game.GameOver();
         }
     }
 

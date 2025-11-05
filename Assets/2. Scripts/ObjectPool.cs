@@ -14,6 +14,7 @@ public class ObjectPool<T> where T : MonoBehaviour
         this.prefabs = prefab;
 
         Root = new GameObject($"{prefab.name}_pool").transform;
+        Object.DontDestroyOnLoad(Root.gameObject);
 
         for (int i = 0; i < initCount; i++)
         {
@@ -29,6 +30,7 @@ public class ObjectPool<T> where T : MonoBehaviour
         if (pool.Count == 0) return null;
 
         var inst = pool.Dequeue();
+        inst.transform.SetParent(null); // ★ 3. 부모를 null로 설정 (풀에서 분리)
         inst.gameObject.SetActive(true);
 
         return inst;
@@ -37,7 +39,8 @@ public class ObjectPool<T> where T : MonoBehaviour
     public void Enqueue(T instance, bool isActive = false)
     {
         if (instance == null) return;
-        Debug.Log($"Enqueue {isActive}");
+
+        instance.transform.SetParent(Root); // ★ 4. 부모를 다시 Root로 설정 (풀에 복귀)
         instance.gameObject.SetActive(isActive);
         pool.Enqueue(instance);
     }
