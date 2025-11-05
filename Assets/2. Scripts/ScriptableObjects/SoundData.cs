@@ -24,4 +24,7 @@ public class SoundData : ScriptableObject
     public Sound[] sfxSounds;
     [Range(0f, 1f)]
     public float defaultSFXVolume = 0.7f;
+
+    [Header("Slow BGM Settings")]
+    public Sound[] slowMotionSounds;
 }

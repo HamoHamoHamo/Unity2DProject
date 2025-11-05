@@ -15,11 +15,13 @@ public class TimeSlowManager : MonoBehaviour
     [Header("Energy Settings")]
     [SerializeField] private float maxEnergy = 200f;        // 최대 에너지
     [SerializeField] private float energyDrainRate = 20f;   // 초당 에너지 소모율
-    [SerializeField] private float energyRegenRate = 10f;   // 초당 에너지 회복률
+    [SerializeField] private float energyRegenRate = 20f;   // 초당 에너지 회복률
     [SerializeField] private float energyRegenDelay = 1f;   // 에너지 회복 시작 전 대기 시간
 
     [Header("Audio Pitch")]
-    [SerializeField] private bool adjustAudioPitch = true;  // 오디오 피치를 시간 속도에 맞출지 여부
+    [SerializeField] private bool adjustAudioPitch = true;  // 오디오 피치를 시간 속도에 맞춰 조정할지 여부
+
+    private SoundManager soundManager;     // SoundManager 참조
 
     private float currentEnergy;
     private float targetTimeScale = 1f;
@@ -34,6 +36,12 @@ public class TimeSlowManager : MonoBehaviour
     void Awake()
     {
         currentEnergy = maxEnergy;
+
+        // SoundManager가 할당되지 않았으면 자동으로 찾기
+        if (soundManager == null)
+        {
+            soundManager = Managers.Sound;
+        }
     }
 
     void Update()
@@ -106,10 +114,13 @@ public class TimeSlowManager : MonoBehaviour
             transitionSpeed * Time.unscaledDeltaTime
         );
 
-        // 오디오 피치 조정
-        if (adjustAudioPitch)
+        // 물리 시뮬레이션 타이밍 조정
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+        // 오디오 피치를 시간 속도에 맞춰 조정
+        if (adjustAudioPitch && soundManager != null)
         {
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            soundManager.SetSFXPitch(Time.timeScale);
         }
     }
 
@@ -122,6 +133,11 @@ public class TimeSlowManager : MonoBehaviour
         {
             isSlowMotionActive = true;
             targetTimeScale = slowMotionScale;
+
+            // 슬로우 모션 사운드 재생
+            soundManager.PauseBGM();
+            soundManager.PlaySlowMotionSounds();
+
         }
     }
 
@@ -134,6 +150,10 @@ public class TimeSlowManager : MonoBehaviour
         {
             isSlowMotionActive = false;
             targetTimeScale = normalScale;
+
+            // 슬로우 모션 사운드 정지 및 초기화
+            soundManager.StopSlowMotionSounds();
+            soundManager.ResumeBGM();
         }
     }
 
@@ -155,8 +175,13 @@ public class TimeSlowManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // 게임이 종료되거나 씬이 변경될 때 시간 속도 복원
+        // 게임이 종료되거나 씬이 변경될 때 시간 속도 및 오디오 피치 복원
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
+
+        if (soundManager != null)
+        {
+            soundManager.SetGlobalPitch(1f);
+        }
     }
 }

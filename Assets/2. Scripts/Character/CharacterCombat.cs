@@ -210,11 +210,15 @@ public class CharacterCombat : MonoBehaviour
                     }
                 }
 
-                // Enemy와의 공격 충돌 감지 (Player만)
+                // Melee Enemy와의 공격 충돌 감지 (Player만)
                 if (target.gameObject.layer == LayerMask.NameToLayer("Enemy"))
                 {
                     CharacterCombat enemyCombat = target.GetComponent<CharacterCombat>();
-                    if (enemyCombat != null && enemyCombat.IsPerformingGroggy && !enemyCombat.IsGroggy)
+                    if (enemyCombat != null &&
+                        enemyCombat.IsPerformingGroggy &&
+                        !enemyCombat.IsGroggy &&
+                        enemyCombat.AttackArea != null
+                    )
                     {
                         // Enemy도 공격 판정 중이고 그로기 상태가 아님
                         // 두 공격 박스가 겹치는지 확인

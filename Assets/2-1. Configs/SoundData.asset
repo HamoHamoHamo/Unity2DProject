@@ -16,7 +16,7 @@ MonoBehaviour:
   - name: Main
     clip: {fileID: 8300000, guid: 088a31987a5fd4db1a1b8ffe17deed47, type: 3}
     volume: 1
-  defaultBGMVolume: 0.3
+  defaultBGMVolume: 0.4
   sfxSounds:
   - name: PlayerAttack
     clip: {fileID: 8300000, guid: ece612ced5e4645aaa6ed6b0a8c2ecd2, type: 3}
@@ -52,3 +52,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 3ed7cc21cbac94b90a4694927629e589, type: 3}
     volume: 0.7
   defaultSFXVolume: 1
+  slowMotionSounds:
+  - name: SlowMain
+    clip: {fileID: 8300000, guid: 069a5a4a8e1ac45e592180e9dd938782, type: 3}
+    volume: 1
+  - name: SlowLanding
+    clip: {fileID: 8300000, guid: 666c45533ef4b411fa1ffe32ecb37380, type: 3}
+    volume: 0.7

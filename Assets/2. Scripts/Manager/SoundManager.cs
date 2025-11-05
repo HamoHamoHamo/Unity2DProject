@@ -13,8 +13,9 @@ public class SoundManager : MonoBehaviour
     private float bgmVolume;
     private float sfxVolume;
 
-    private AudioSource bgmSource;
-    private AudioSource sfxSource;
+    private AudioSource bgmSource;          // BGM용 AudioSource
+    private AudioSource sfxSource;          // 효과음용 AudioSource
+    private List<AudioSource> slowMotionSources = new List<AudioSource>(); // 슬로우 모션 사운드용 AudioSource 리스트
 
     private Dictionary<string, AudioClip> bgmDictionary = new Dictionary<string, AudioClip>();
     private Dictionary<string, SoundData.Sound> sfxDictionary = new Dictionary<string, SoundData.Sound>();
@@ -43,7 +44,7 @@ public class SoundManager : MonoBehaviour
         InitializeAudioSources();
         InitializeDictionaries();
 
-        Debug.Log($"SoundManager 초기화 완료: BGM {soundData.bgmSounds.Length}개, SFX {soundData.sfxSounds.Length}개");
+        Debug.Log($"SoundManager 초기화 완료: BGM {soundData.bgmSounds.Length}개, SFX {soundData.sfxSounds.Length}개, Slow Motion {soundData.slowMotionSounds.Length}개");
     }
 
     /// <summary>
@@ -72,6 +73,21 @@ public class SoundManager : MonoBehaviour
         sfxSource.loop = false;
         sfxSource.volume = sfxVolume;
         sfxSource.playOnAwake = false;
+
+        // 슬로우 모션 사운드용 AudioSource 미리 생성
+        slowMotionSources.Clear();
+        foreach (SoundData.Sound sound in soundData.slowMotionSounds)
+        {
+            if (sound.clip != null)
+            {
+                AudioSource source = gameObject.AddComponent<AudioSource>();
+                source.clip = sound.clip;
+                source.volume = sound.volume;
+                source.loop = false;
+                source.playOnAwake = false;
+                slowMotionSources.Add(source);
+            }
+        }
     }
 
     /// <summary>
@@ -101,18 +117,57 @@ public class SoundManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 슬로우 모션 사운드 재생
+    /// </summary>
+    public void PlaySlowMotionSounds()
+    {
+        // 기존에 재생 중인 슬로우 모션 사운드 정지
+        StopSlowMotionSounds();
+
+        // 미리 생성된 AudioSource들을 재사용하여 재생
+        foreach (AudioSource source in slowMotionSources)
+        {
+            if (source != null && source.clip != null)
+            {
+                source.Play();
+            }
+        }
+
+        Debug.Log($"슬로우 모션 사운드 {slowMotionSources.Count}개 재생 시작");
+    }
+
+    /// <summary>
+    /// 슬로우 모션 사운드 정지
+    /// </summary>
+    public void StopSlowMotionSounds()
+    {
+        foreach (AudioSource source in slowMotionSources)
+        {
+            if (source != null)
+            {
+                source.Stop();
+            }
+        }
+
+        Debug.Log("슬로우 모션 사운드 정지 완료");
+    }
+
+    /// <summary>
     /// BGM 재생
     /// </summary>
     public void PlayBGM(string soundName)
     {
         if (bgmDictionary.TryGetValue(soundName, out AudioClip clip))
         {
+            // 이미 같은 BGM이 재생 중이면 무시
             if (bgmSource.clip == clip && bgmSource.isPlaying)
             {
-                return; // 이미 같은 BGM이 재생 중이면 무시
+                return;
             }
 
+            // BGM 재생
             bgmSource.clip = clip;
+            bgmSource.volume = bgmVolume;
             bgmSource.Play();
         }
         else
@@ -181,7 +236,12 @@ public class SoundManager : MonoBehaviour
     public void SetBGMVolume(float volume)
     {
         bgmVolume = Mathf.Clamp01(volume);
-        bgmSource.volume = bgmVolume;
+
+        // 현재 재생 중인 BGM의 볼륨 업데이트
+        if (bgmSource.isPlaying)
+        {
+            bgmSource.volume = bgmVolume;
+        }
     }
 
     /// <summary>
@@ -207,4 +267,50 @@ public class SoundManager : MonoBehaviour
     /// BGM이 재생 중인지 확인
     /// </summary>
     public bool IsBGMPlaying() => bgmSource.isPlaying;
+
+    /// <summary>
+    /// 모든 오디오 소스의 피치 설정 (시간 감속 효과용)
+    /// </summary>
+    public void SetGlobalPitch(float pitch)
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.pitch = pitch;
+        }
+        if (sfxSource != null)
+        {
+            sfxSource.pitch = pitch;
+        }
+
+        // 슬로우 모션 사운드들의 피치도 조정
+        // foreach (AudioSource source in slowMotionSources)
+        // {
+        //     if (source != null)
+        //     {
+        //         source.pitch = pitch;
+        //     }
+        // }
+    }
+
+    /// <summary>
+    /// BGM 피치 설정
+    /// </summary>
+    public void SetBGMPitch(float pitch)
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.pitch = pitch;
+        }
+    }
+
+    /// <summary>
+    /// 효과음 피치 설정
+    /// </summary>
+    public void SetSFXPitch(float pitch)
+    {
+        if (sfxSource != null)
+        {
+            sfxSource.pitch = pitch;
+        }
+    }
 }
