@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.Rendering;
 
 public class SceneInitializer : MonoBehaviour
 {
     [SerializeField] private List<Tilemap> groundTilemap;
     [SerializeField] private SpawnConfig spawnConfig;
     [SerializeField] private SoundData soundData;
+    [SerializeField] private Volume slowMoVolume;
 
     void Awake()
     {
@@ -23,6 +25,11 @@ public class SceneInitializer : MonoBehaviour
         {
             Managers.Spawn.Initialize(groundTilemap, spawnConfig);
             Managers.Spawn.StartSpawning();
+        }
+
+        if (slowMoVolume != null)
+        {
+            Managers.TimeSlow.InitializeVolume(slowMoVolume);
         }
 
     }

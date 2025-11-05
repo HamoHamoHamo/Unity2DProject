@@ -78,6 +78,7 @@ GameObject:
   - component: {fileID: 1217199703437772378}
   - component: {fileID: 5840637472152741071}
   - component: {fileID: 5750207093944395031}
+  - component: {fileID: 6412241815697914899}
   m_Layer: 9
   m_Name: RangedEnemy
   m_TagString: Enemy
@@ -122,7 +123,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 7e84803be4edb4a9482f6bef274aec63, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -226,6 +227,7 @@ MonoBehaviour:
   bulletSpawnPoint: {fileID: 1070135041861282924}
   bulletSpeed: 20
   slashEffect: {fileID: 0}
+  groggyDuration: 1
 --- !u!114 &1217199703437772378
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,11 +246,13 @@ MonoBehaviour:
   jumpForce: 15
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
+  KnockbackForce: 5
   groundCheck: {fileID: 6430184953062807816}
   groundCheckRadius: 0.25
   groundLayer:
     serializedVersion: 2
     m_Bits: 320
+  ignoreTimeScale: 0
 --- !u!114 &5840637472152741071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,3 +319,15 @@ CircleCollider2D:
   m_Offset: {x: 0.09425342, y: -0.07330871}
   serializedVersion: 2
   m_Radius: 0.78332925
+--- !u!114 &6412241815697914899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8854306988361158451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac15f669214e4adfa05de3cbc9d16ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

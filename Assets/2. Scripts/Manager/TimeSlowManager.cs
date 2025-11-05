@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 카타나 제로 스타일의 시간 감속 시스템
@@ -10,7 +12,7 @@ public class TimeSlowManager : MonoBehaviour
     [Header("Time Slow Settings")]
     [SerializeField] private float slowMotionScale = 0.2f;  // 시간 감속 정도 (0.2 = 20% 속도)
     [SerializeField] private float normalScale = 1f;        // 일반 시간 속도
-    [SerializeField] private float transitionSpeed = 5f;    // 시간 속도 전환 부드러움
+    [SerializeField] private float transitionSpeed = 10f;    // 시간 속도 전환 부드러움
 
     [Header("Energy Settings")]
     [SerializeField] private float maxEnergy = 200f;        // 최대 에너지
@@ -22,6 +24,14 @@ public class TimeSlowManager : MonoBehaviour
     [SerializeField] private bool adjustAudioPitch = true;  // 오디오 피치를 시간 속도에 맞춰 조정할지 여부
 
     private SoundManager soundManager;     // SoundManager 참조
+
+    // 포스트 프로세싱 변수
+    private Volume slowMoVolume;
+    private float targetVolumeWeight = 0f;
+
+    // 캐릭터 하이라이트 변수
+    private List<Material> activeCharacterMaterials = new List<Material>();
+    private float targetGlow = 0f;   // 목표 발광 강도
 
     private float currentEnergy;
     private float targetTimeScale = 1f;
@@ -42,6 +52,11 @@ public class TimeSlowManager : MonoBehaviour
         {
             soundManager = Managers.Sound;
         }
+    }
+
+    public void InitializeVolume(Volume volume)
+    {
+        slowMoVolume = volume;
     }
 
     void Update()
@@ -122,6 +137,42 @@ public class TimeSlowManager : MonoBehaviour
         {
             soundManager.SetSFXPitch(Time.timeScale);
         }
+
+        // 포스트 프로세싱 (배경 어둡게)
+        if (slowMoVolume != null)
+        {
+            slowMoVolume.weight = Mathf.Lerp(
+                slowMoVolume.weight,
+                targetVolumeWeight,
+                Time.unscaledDeltaTime * transitionSpeed
+            );
+        }
+
+        // 캐릭터 셰이더 (발광) - 리스트 전체 업데이트
+        if (activeCharacterMaterials.Count > 0)
+        {
+            // 4-1. 현재 발광 값 샘플링 (리스트의 첫 번째 머티리얼 기준)
+            // (어차피 모두 같은 값을 가지므로 첫 번째 것만 확인)
+            float currentGlow = activeCharacterMaterials[0].GetFloat("_GlowIntensity");
+
+            // 4-2. 목표 발광 값으로 Lerp 계산 (Update당 딱 한 번만!)
+            float newGlowValue = Mathf.Lerp(currentGlow, targetGlow, Time.unscaledDeltaTime * transitionSpeed);
+
+
+            // 4-3. 계산된 값을 리스트의 모든 머티리얼에 적용
+            for (int i = activeCharacterMaterials.Count - 1; i >= 0; i--)
+            {
+                // (안전 장치: 혹시라도 리스트에 null이 있다면 제거)
+                if (activeCharacterMaterials[i] == null)
+                {
+                    activeCharacterMaterials.RemoveAt(i);
+                    continue;
+                }
+
+                activeCharacterMaterials[i].SetFloat("_GlowIntensity", newGlowValue);
+
+            }
+        }
     }
 
     /// <summary>
@@ -138,6 +189,10 @@ public class TimeSlowManager : MonoBehaviour
             soundManager.PauseBGM();
             soundManager.PlaySlowMotionSounds();
 
+            // 포스트 프로세싱 weight 조절
+            targetVolumeWeight = 1.0f;
+
+            targetGlow = 30f;
         }
     }
 
@@ -154,6 +209,11 @@ public class TimeSlowManager : MonoBehaviour
             // 슬로우 모션 사운드 정지 및 초기화
             soundManager.StopSlowMotionSounds();
             soundManager.ResumeBGM();
+
+            // 포스트 프로세싱 weight 조절
+            targetVolumeWeight = 0.0f;
+
+            targetGlow = 0.0f;
         }
     }
 
@@ -173,15 +233,20 @@ public class TimeSlowManager : MonoBehaviour
         currentEnergy = Mathf.Clamp(amount, 0, maxEnergy);
     }
 
-    void OnDestroy()
+    public void RegisterCharacterMaterial(Material mat)
     {
-        // 게임이 종료되거나 씬이 변경될 때 시간 속도 및 오디오 피치 복원
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02f;
-
-        if (soundManager != null)
+        if (mat != null && !activeCharacterMaterials.Contains(mat))
         {
-            soundManager.SetGlobalPitch(1f);
+            activeCharacterMaterials.Add(mat);
+        }
+    }
+
+    // [추가] 캐릭터 머티리얼 해제 함수 (풀링에 필수!)
+    public void UnregisterCharacterMaterial(Material mat)
+    {
+        if (mat != null)
+        {
+            activeCharacterMaterials.Remove(mat);
         }
     }
 }
