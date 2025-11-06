@@ -50,11 +50,15 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
+        survivalTime = 0;
+        killCount = 0;
+
         // 1. 씬 로드 전 리셋이 필요한 매니저들 호출
-        if (Managers.Sound != null)
-        {
-            Managers.Sound.StopAllSounds(); // 사운드 정지
-        }
+        Managers.Sound.StopAllSounds(); // 사운드 정지
+
+        Managers.Spawn.ResetManager();
+
+        Managers.Pool.ClearAllPoolsKey();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

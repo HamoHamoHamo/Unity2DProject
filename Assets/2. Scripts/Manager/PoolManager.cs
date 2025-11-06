@@ -10,6 +10,7 @@ public class PoolManager : MonoBehaviour
 
     public void CreatePool<T>(T prefab, int initCount, Transform parent = null) where T : MonoBehaviour
     {
+        Debug.Log($"create pool {prefab.name}");
         if (prefab == null) return;
 
         string key = prefab.name;
@@ -53,4 +54,10 @@ public class PoolManager : MonoBehaviour
             pool.Enqueue(instance, isActive);
         }
     }
+
+    public void ClearAllPoolsKey()
+    {
+        pools.Clear();
+    }
+
 }

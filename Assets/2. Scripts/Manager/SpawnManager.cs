@@ -33,7 +33,6 @@ public class SpawnManager : MonoBehaviour
     public void Initialize(List<Tilemap> tilemaps, SpawnConfig config)
 
     {
-        Debug.Log($"isInitialized {isInitialized}");
         if (isInitialized) return;
 
         if (config == null)
@@ -105,15 +104,12 @@ public class SpawnManager : MonoBehaviour
 
     void Update()
     {
-        Debug.Log($"Test {isSpawning} {playerTransform}");
         if (!isInitialized || !isSpawning || playerTransform == null) return;
 
         // 적 스폰 타이머
         enemySpawnTimer += Time.deltaTime;
         if (enemySpawnTimer >= enemySpawnInterval)
         {
-            Debug.Log(CountActiveObjects("Enemy"));
-            Debug.Log(maxEnemies);
             if (CountActiveObjects("Enemy") < maxEnemies)
             {
                 SpawnEnemy();
@@ -177,7 +173,6 @@ public class SpawnManager : MonoBehaviour
     /// </summary>
     void SpawnEnemy()
     {
-        Debug.Log("SpawnEnemy");
         if (enemyPrefabs == null || enemyPrefabs.Count == 0) return;
 
         // 랜덤으로 Enemy 타입 선택
@@ -313,6 +308,31 @@ public class SpawnManager : MonoBehaviour
     {
         enemySpawnTimer = 0f;
         throwableItemSpawnTimer = 0f;
+    }
+
+    /// <summary>
+    /// 씬 재시작을 위해 스폰 매니저의 상태를 초기화합니다.
+    /// </summary>
+    public void ResetManager()
+    {
+        // 스폰 중지
+        isSpawning = false;
+
+        // 캐시된 타일 정보 클리어 (이것도 이전 씬의 타일맵 정보이므로)
+        walkableTilemaps.Clear();
+        walkableTiles.Clear();
+
+        // 플레이어 참조 해제
+        playerTransform = null;
+
+        // 타이머 리셋
+        ResetTimers();
+
+        // 가장 중요: isInitialized를 false로 되돌려서
+        // 다음 씬에서 Initialize()가 다시 실행될 수 있도록 함
+        isInitialized = false;
+
+        Debug.Log("[SpawnManager] 매니저 상태 리셋 완료");
     }
 
 }
