@@ -39,6 +39,11 @@ public class PlayerController : MonoBehaviour, IDamageable
         HandleInput();
     }
 
+    void OnEnable()
+    {
+        combat.SetIgnoreLayerCollision(false);
+    }
+
     private void HandleInput()
     {
         if (isDead && Input.GetKey(KeyCode.R))
@@ -112,6 +117,16 @@ public class PlayerController : MonoBehaviour, IDamageable
         {
             movement.Dodge();
         }
+
+        // 시간감속
+        if (!isDead && Input.GetKey(KeyCode.LeftShift))
+        {
+            Managers.TimeSlow.SetTimeSlow(true);
+        }
+        else
+        {
+            Managers.TimeSlow.SetTimeSlow(false);
+        }
     }
 
     void TryPickupNearestItem()
@@ -124,7 +139,6 @@ public class PlayerController : MonoBehaviour, IDamageable
 
         ThrowableItem nearestItem = null;
         float nearestDistance = float.MaxValue;
-        Debug.Log($"pick up {colliders}");
         foreach (Collider2D col in colliders)
         {
             ThrowableItem item = col.GetComponent<ThrowableItem>();
@@ -181,9 +195,10 @@ public class PlayerController : MonoBehaviour, IDamageable
         if (!isDead)
         {
             combat.EnterDie();
+            combat.SetIgnoreLayerCollision(true);
             StopAllCoroutines();
+            Managers.TimeSlow.DeactivateSlowMotion();
 
-            Debug.Log("PlayerDie");
             isDead = true;
             Managers.Sound.Play("PlayerDie");
             anim.SetTrigger("Die");

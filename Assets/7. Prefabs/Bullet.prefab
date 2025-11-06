@@ -193,6 +193,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a95bec138db504873b99f1cd81d18655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
+  speed: 10
   lifetime: 3
   deflectedColor: {r: 1, g: 0.45709407, b: 0, a: 1}

@@ -37,6 +37,7 @@ public class TimeSlowManager : MonoBehaviour
     private float targetTimeScale = 1f;
     private bool isSlowMotionActive = false;
     private float lastEnergyUseTime;
+    private bool timeSlowRequested = false;
 
     public float CurrentEnergy => currentEnergy;
     public float MaxEnergy => maxEnergy;
@@ -72,7 +73,7 @@ public class TimeSlowManager : MonoBehaviour
     private void HandleTimeSlowInput()
     {
         // Shift 키를 누르고 있고 에너지가 있을 때
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        if (timeSlowRequested)
         {
             if (currentEnergy > 0)
             {
@@ -173,6 +174,11 @@ public class TimeSlowManager : MonoBehaviour
 
             }
         }
+    }
+
+    public void SetTimeSlow(bool value)
+    {
+        timeSlowRequested = value;
     }
 
     /// <summary>

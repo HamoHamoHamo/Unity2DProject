@@ -12,6 +12,8 @@ public class Managers : MonoBehaviour
     private static TimeSlowManager _timeSlow;
     private static SoundManager _sound;
 
+    public static HitEffectManager HitEffect => HitEffectManager.Instance;
+
     private static void Init()
     {
         if (_root == null)

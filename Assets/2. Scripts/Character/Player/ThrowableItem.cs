@@ -57,11 +57,6 @@ public class ThrowableItem : MonoBehaviour
 
         // 물리 비활성화
         SetPhysicsState(false);
-
-        // 부모 설정 (선택사항 - 더 안정적인 추적)
-        // transform.SetParent(holdPoint);
-
-        Debug.Log($"{gameObject.name} picked up!");
     }
 
     /// <summary>

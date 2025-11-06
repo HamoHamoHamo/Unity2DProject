@@ -37,13 +37,14 @@ public class Enemy : MonoBehaviour, IDamageable
     [Header("Movement Smoothing")]
     [SerializeField] private float movementSmoothTime = 0.3f; // 이동 반응 시간 (높을수록 느리게 반응)
 
-    [Header("References")]
-    [SerializeField] private Transform player;
+    [Header("Hit Effects")]
+    [SerializeField] private SlashLineEffect slashLineEffect;
 
     private CharacterMovement movement;
     private CharacterCombat combat;
     private Animator anim;
     private Rigidbody2D rb;
+    private Transform player;
 
     private float lastJumpTime;
     private float lastDropTime;
@@ -80,6 +81,14 @@ public class Enemy : MonoBehaviour, IDamageable
                 player = playerObj.transform;
             }
         }
+    }
+
+    void OnEnable()
+    {
+        isDead = false;
+        movement.CanMove(true);
+        currentState = EnemyState.Idle;
+        combat.SetIgnoreLayerCollision(false);
     }
 
     void Update()
@@ -327,17 +336,18 @@ public class Enemy : MonoBehaviour, IDamageable
         currentState = EnemyState.Dead;
 
         combat.EnterDie();
+        combat.SetIgnoreLayerCollision(true);
 
-
+        movement.DieKnockback();
         anim.SetTrigger("Die");
-        Managers.Sound.Play("EnemyHit");
+
         Managers.Game.OnEnemyKilled();
 
         yield return new WaitForSeconds(1f);
 
         gameObject.SetActive(false);
         Managers.Pool.ReturnPool(this, false);
-        isDead = false;
+
 
     }
 
@@ -346,6 +356,12 @@ public class Enemy : MonoBehaviour, IDamageable
     /// </summary>
     public void TakeDamage(int damage)
     {
+        Managers.Sound.Play("EnemyHit");
+
+        if (slashLineEffect != null && player != null)
+        {
+            slashLineEffect.ShowSlashLineFromAttacker(player);
+        }
         Die();
     }
 

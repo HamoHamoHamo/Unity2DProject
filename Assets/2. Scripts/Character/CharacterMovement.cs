@@ -14,6 +14,7 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float KnockbackForce = 5f;
+    [SerializeField] private float KnockbackDuration = 0.15f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -74,7 +75,7 @@ public class CharacterMovement : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
         // 착지 감지: 공중 → 땅 + 하강 중
-        if (!wasGrounded && isGrounded && rb.velocity.y <= 0)
+        if (!wasGrounded && isGrounded && rb.velocity.y <= 0 && gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             Managers.Sound.Play("Land");
         }
@@ -106,7 +107,8 @@ public class CharacterMovement : MonoBehaviour
         // 점프 실행
         if (jumpRequested && isGrounded && !isDodging)
         {
-            Managers.Sound.Play("Jump");
+            if (gameObject.layer == LayerMask.NameToLayer("Player"))
+                Managers.Sound.Play("Jump");
             rb.velocity = new Vector2(rb.velocity.x, 0f);
             rb.velocity += Vector2.up * jumpForce;
             jumpRequested = false;
@@ -247,10 +249,10 @@ public class CharacterMovement : MonoBehaviour
     /// <summary>
     /// 공격 중 상태 설정 (공격 중에는 이동 제어를 무시)
     /// </summary>
-    public void CanMove(bool can)
+    public void CanMove(bool value)
     {
-        canMove = can;
-        if (!can)
+        canMove = value;
+        if (!value)
         {
             currentMoveInput = 0;
         }
@@ -265,20 +267,25 @@ public class CharacterMovement : MonoBehaviour
 
     public void Knockback()
     {
-        StartCoroutine(KnockbackCo());
+        StartCoroutine(KnockbackCo(KnockbackForce, KnockbackDuration));
     }
 
-    private IEnumerator KnockbackCo()
+    public void DieKnockback()
+    {
+        StartCoroutine(KnockbackCo(KnockbackForce * 2, KnockbackDuration * 2));
+    }
+
+    private IEnumerator KnockbackCo(float force, float duration)
     {
         currentMoveInput = 0;
 
         // 넉백 방향으로 velocity 설정
         Vector2 direction = isFacingRight ? Vector2.left : Vector2.right;
-        rb.velocity = new Vector2(direction.x * KnockbackForce, 0);
-        rb.velocity += Vector2.up * KnockbackForce / 2;
+        rb.velocity = new Vector2(direction.x * force, 0);
+        rb.velocity += Vector2.up * force / 2;
 
         // 넉백 지속 시간 (짧게!)
-        yield return new WaitForSeconds(0.15f);
+        yield return new WaitForSeconds(duration);
 
         // X축 속도 멈춤 (Y축은 중력에 맡김)
         rb.velocity = new Vector2(0, rb.velocity.y);

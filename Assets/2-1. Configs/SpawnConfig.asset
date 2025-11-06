@@ -15,9 +15,9 @@ MonoBehaviour:
   enemyPrefabs:
   - {fileID: 8246112904104871102, guid: c9baf886ebf00402eae871488f5c27fb, type: 3}
   - {fileID: 5840637472152741071, guid: 3da68d3ab5beb40b9ad5e82dd8bb4fc7, type: 3}
-  enemyPoolSize: 20
-  enemySpawnInterval: 3
-  maxEnemies: 10
+  enemyPoolSize: 10
+  enemySpawnInterval: 2
+  maxEnemies: 20
   throwableItemPrefab: {fileID: 8907007934899841631, guid: bad4d6462775b43e09869be1a88c1425, type: 3}
   throwableItemPoolSize: 10
   throwableItemSpawnInterval: 5

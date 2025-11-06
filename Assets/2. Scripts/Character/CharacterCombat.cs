@@ -45,6 +45,7 @@ public class CharacterCombat : MonoBehaviour
     // 공격 판정 지속 관련
     private bool isPerformingAttack = false;
     private HashSet<Collider2D> hitTargetsInCurrentAttack = new HashSet<Collider2D>();
+    private bool isProcessingSequentialHits = false;
 
     // 그로기 상태
     private bool isGroggy = false;
@@ -72,7 +73,7 @@ public class CharacterCombat : MonoBehaviour
 
     private void UpdateAttackCooldown()
     {
-        if (!canAttack)
+        if (!canAttack && !isGroggy)
         {
             attackTimer -= Time.deltaTime;
             if (attackTimer <= 0)
@@ -87,7 +88,7 @@ public class CharacterCombat : MonoBehaviour
     /// </summary>
     private void UpdateAttackDetection()
     {
-        if (isPerformingAttack)
+        if (isPerformingAttack && !isProcessingSequentialHits)
         {
             PerformAttackDetection(hitTargetsInCurrentAttack);
         }
@@ -181,6 +182,9 @@ public class CharacterCombat : MonoBehaviour
             attackArea.eulerAngles.z, // 박스 회전 (캐릭터 회전과 동기화)
             targetLayer               // 대상 레이어
         );
+
+        List<Collider2D> validTargets = new List<Collider2D>();
+
         // 감지된 대상에게 데미지
         foreach (Collider2D target in hitTargets)
         {
@@ -191,6 +195,28 @@ public class CharacterCombat : MonoBehaviour
             // 이미 맞은 대상은 제외 (중복 타격 방지)
             if (alreadyHitTargets.Contains(target))
                 continue;
+
+            validTargets.Add(target);
+        }
+
+        // 타격할 대상이 있으면 순차 처리 시작
+        if (validTargets.Count > 0 && !isProcessingSequentialHits)
+        {
+            StartCoroutine(ProcessSequentialHitsCo(validTargets, alreadyHitTargets));
+        }
+
+    }
+
+    /// <summary>
+    /// 순차적으로 적을 타격하며 히트스톱 적용
+    /// </summary>
+    private IEnumerator ProcessSequentialHitsCo(List<Collider2D> targets, HashSet<Collider2D> alreadyHitTargets)
+    {
+        isProcessingSequentialHits = true;
+
+        foreach (Collider2D target in targets)
+        {
+            if (target == null) continue;
 
             // Player일 때만 Bullet 튕겨내기 시도
             if (gameObject.layer == LayerMask.NameToLayer("Player"))
@@ -205,6 +231,14 @@ public class CharacterCombat : MonoBehaviour
                         Vector2 deflectDirection = -bulletRb.velocity.normalized;
                         bullet.Deflect(deflectDirection);
                         alreadyHitTargets.Add(target); // 중복 튕겨내기 방지
+
+                        // Bullet 튕겨낼 때도 히트스톱 적용
+                        if (HitEffectManager.Instance != null)
+                        {
+                            HitEffectManager.Instance.PlayHitEffect(0.08f, 0.1f, 0.1f, 0.15f);
+                        }
+                        yield return new WaitForSecondsRealtime(0.08f);
+
                         continue; // Bullet은 데미지 대상이 아니므로 다음으로
                     }
                 }
@@ -228,6 +262,14 @@ public class CharacterCombat : MonoBehaviour
                             enemyCombat.EnterGroggy();
 
                             alreadyHitTargets.Add(target); // 중복 처리 방지
+
+                            // 그로기 상태 진입 시 히트스톱
+                            if (HitEffectManager.Instance != null)
+                            {
+                                HitEffectManager.Instance.PlayHitEffect(0.15f, 0.05f, 0.2f, 0.3f);
+                            }
+                            yield return new WaitForSecondsRealtime(0.15f);
+
                             continue; // 데미지는 입히지 않음
                         }
                     }
@@ -247,11 +289,31 @@ public class CharacterCombat : MonoBehaviour
                 IDamageable damageable = target.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
+                    // 데미지 적용
                     damageable.TakeDamage(attackDamage);
                     alreadyHitTargets.Add(target); // 타격한 대상 기록
+
+                    // 히트스톱 적용 (적 타격 시)
+                    if (HitEffectManager.Instance != null)
+                    {
+                        // 플레이어 공격일 때 더 강한 히트스톱
+                        if (gameObject.layer == LayerMask.NameToLayer("Player"))
+                        {
+                            HitEffectManager.Instance.PlayHitEffect();
+                            yield return new WaitForSecondsRealtime(0.2f);
+                        }
+                        else
+                        {
+                            // 적 공격일 때는 약한 히트스톱
+                            HitEffectManager.Instance.PlayHitEffect(0.1f, 0.1f, 0.1f, 0.15f);
+                            yield return new WaitForSecondsRealtime(0.1f);
+                        }
+                    }
                 }
             }
         }
+
+        isProcessingSequentialHits = false;
     }
 
     /// <summary>
@@ -355,7 +417,33 @@ public class CharacterCombat : MonoBehaviour
 
         isGroggy = false;
         canAttack = false;
+        movement.SetMoveInput(0);
         movement.CanMove(false);
+
+    }
+
+    public void SetIgnoreLayerCollision(bool ignore)
+    {
+        // 특정 레이어와의 충돌 무시
+        int currentLayer = gameObject.layer;
+        int playerLayer = LayerMask.NameToLayer("Player");
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+        int bulletLayer = LayerMask.NameToLayer("Bullet");
+        int throwableLayer = LayerMask.NameToLayer("ThrowableItem");
+
+        // Player가 죽었을 때
+        if (currentLayer == playerLayer)
+        {
+            Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, ignore);
+            Physics2D.IgnoreLayerCollision(playerLayer, bulletLayer, ignore);
+        }
+        // Enemy가 죽었을 때
+        else if (currentLayer == enemyLayer)
+        {
+            Physics2D.IgnoreLayerCollision(enemyLayer, playerLayer, ignore);
+            Physics2D.IgnoreLayerCollision(enemyLayer, bulletLayer, ignore);
+            Physics2D.IgnoreLayerCollision(enemyLayer, throwableLayer, ignore);
+        }
     }
 
     /// <summary>
