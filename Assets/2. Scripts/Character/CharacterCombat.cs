@@ -51,11 +51,14 @@ public class CharacterCombat : MonoBehaviour
     private bool isGroggy = false;
     private bool isPerformingGroggy = false;
 
+    private bool isDead = false;
+
     // Public 프로퍼티 (외부 접근용)
     public bool CanAttack => canAttack;
     public bool IsPerformingAttack => isPerformingAttack;
     public bool IsPerformingGroggy => isPerformingGroggy;
     public bool IsGroggy => isGroggy;
+    public bool IsDead => IsDead;
     public Transform AttackArea => attackArea;
     public Vector2 AttackBoxSize => attackBoxSize;
 
@@ -422,8 +425,12 @@ public class CharacterCombat : MonoBehaviour
 
     }
 
-    public void SetIgnoreLayerCollision(bool ignore)
+    public void SetDeadStatus(bool value)
     {
+        isDead = value;
+
+        if (value == true) EnterDie();
+
         // 특정 레이어와의 충돌 무시
         int currentLayer = gameObject.layer;
         int playerLayer = LayerMask.NameToLayer("Player");
@@ -434,30 +441,23 @@ public class CharacterCombat : MonoBehaviour
         // Player가 죽었을 때
         if (currentLayer == playerLayer)
         {
-            Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, ignore);
-            Physics2D.IgnoreLayerCollision(playerLayer, bulletLayer, ignore);
+            Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, value);
+            Physics2D.IgnoreLayerCollision(playerLayer, bulletLayer, value);
         }
         // Enemy가 죽었을 때
         else if (currentLayer == enemyLayer)
         {
-            Physics2D.IgnoreLayerCollision(enemyLayer, playerLayer, ignore);
-            Physics2D.IgnoreLayerCollision(enemyLayer, bulletLayer, ignore);
-            Physics2D.IgnoreLayerCollision(enemyLayer, throwableLayer, ignore);
+            Physics2D.IgnoreLayerCollision(enemyLayer, playerLayer, value);
+            Physics2D.IgnoreLayerCollision(enemyLayer, bulletLayer, value);
+            Physics2D.IgnoreLayerCollision(enemyLayer, throwableLayer, value);
         }
     }
 
     /// <summary>
     /// Bullet 발사 (원거리 공격)
     /// </summary>
-    public void FireBullet()
+    public void FireBullet(Transform fireTarget)
     {
-
-        if (gameObject.layer == LayerMask.NameToLayer("Enemy"))
-        {
-            // 플레이어 찾기
-            fireTarget = GameObject.FindGameObjectWithTag("Player");
-        }
-
         if (fireTarget == null)
             return;
 
@@ -475,7 +475,7 @@ public class CharacterCombat : MonoBehaviour
 
         // 플레이어 방향 계산
         float upwardOffset = 1f;
-        Vector2 targetPosition = (Vector2)fireTarget.transform.position + Vector2.up * upwardOffset;
+        Vector2 targetPosition = (Vector2)fireTarget.position + Vector2.up * upwardOffset;
         Vector2 direction = (targetPosition - spawnPosition).normalized;
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;

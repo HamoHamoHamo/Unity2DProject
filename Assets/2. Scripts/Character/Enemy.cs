@@ -49,7 +49,6 @@ public class Enemy : MonoBehaviour, IDamageable
     private float lastJumpTime;
     private float lastDropTime;
     private bool isAttacking;
-    private bool isDead = false;
 
     // 스무딩 관련 변수
     private Vector2 smoothedTargetPosition;
@@ -85,10 +84,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
     void OnEnable()
     {
-        isDead = false;
         movement.CanMove(true);
         currentState = EnemyState.Idle;
-        combat.SetIgnoreLayerCollision(false);
+        combat.SetDeadStatus(false);
     }
 
     void Update()
@@ -241,10 +239,10 @@ public class Enemy : MonoBehaviour, IDamageable
         isAttacking = false;
     }
 
-    public void FireBullet()
+    public void EnemyFireBullet()
     {
         Managers.Sound.Play("RangedEnemyAttack");
-        combat.FireBullet();
+        combat.FireBullet(player);
     }
 
     /// <summary>
@@ -322,7 +320,7 @@ public class Enemy : MonoBehaviour, IDamageable
     /// </summary>
     public void Die()
     {
-        if (!isDead)
+        if (!combat.IsDead)
         {
             StopAllCoroutines();
             StartCoroutine(DieCo());
@@ -331,12 +329,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private IEnumerator DieCo()
     {
-        isDead = true;
         isAttacking = false;
         currentState = EnemyState.Dead;
 
-        combat.EnterDie();
-        combat.SetIgnoreLayerCollision(true);
+
+        combat.SetDeadStatus(true);
 
         movement.DieKnockback();
         anim.SetTrigger("Die");
