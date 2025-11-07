@@ -523,7 +523,7 @@ MonoBehaviour:
   jumpCooldown: 1
   dropCooldown: 0.5
   attackDelay: 0.1
-  attackDuration: 0.1
+  attackDuration: 0.2
   movementSmoothTime: 0.3
   slashLineEffect: {fileID: 5966169602603108401}
 --- !u!58 &5750207093944395031

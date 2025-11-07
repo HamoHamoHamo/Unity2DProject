@@ -24,8 +24,6 @@ public class PlayerController : MonoBehaviour, IDamageable
     private Animator anim;
     private Rigidbody2D rb;
 
-    private bool isDead = false;
-
     void Awake()
     {
         movement = GetComponent<CharacterMovement>();
@@ -41,16 +39,20 @@ public class PlayerController : MonoBehaviour, IDamageable
 
     void OnEnable()
     {
-        combat.SetIgnoreLayerCollision(false);
+        if (combat != null && combat.IsDead)
+        {
+            Debug.Log("OnEnable player");
+            combat.SetDeadStatus(false);
+        }
     }
 
     private void HandleInput()
     {
-        if (isDead && Input.GetKey(KeyCode.R))
+        if (combat.IsDead && Input.GetKey(KeyCode.R))
         {
             Managers.Game.RestartGame();
         }
-        else if (isDead) return;
+        else if (combat.IsDead) return;
 
         // 이동
         float moveInput = Input.GetAxisRaw("Horizontal");
@@ -119,7 +121,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         }
 
         // 시간감속
-        if (!isDead && Input.GetKey(KeyCode.LeftShift))
+        if (!combat.IsDead && Input.GetKey(KeyCode.LeftShift))
         {
             Managers.TimeSlow.SetTimeSlow(true);
         }
@@ -192,18 +194,16 @@ public class PlayerController : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        if (!isDead)
+        if (!combat.IsDead)
         {
-            combat.EnterDie();
-            combat.SetIgnoreLayerCollision(true);
+            combat.SetDeadStatus(true);
             StopAllCoroutines();
-            Managers.TimeSlow.DeactivateSlowMotion();
 
-            isDead = true;
+            Managers.TimeSlow.SetTimeSlow(false);
+
             Managers.Sound.Play("PlayerDie");
             anim.SetTrigger("Die");
 
-            // TODO: 게임 오버
             Managers.Game.GameOver();
         }
     }
@@ -213,6 +213,7 @@ public class PlayerController : MonoBehaviour, IDamageable
     /// </summary>
     public void TakeDamage(int damage)
     {
+        if (combat.IsDead) return;
         Die();
     }
 
