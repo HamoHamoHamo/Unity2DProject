@@ -38,6 +38,7 @@ public class CharacterCombat : MonoBehaviour
     private Animator anim;
     private CharacterMovement movement;
     private Rigidbody2D rb;
+    private Collider2D col;
 
     private bool canAttack = true;
     private float attackTimer;
@@ -68,6 +69,7 @@ public class CharacterCombat : MonoBehaviour
         anim = GetComponent<Animator>();
         movement = GetComponent<CharacterMovement>();
         rb = GetComponent<Rigidbody2D>();
+        col = GetComponent<Collider2D>();
     }
 
     void Update()
@@ -434,12 +436,14 @@ public class CharacterCombat : MonoBehaviour
         if (dead)
         {
             EnterDie();
+            col.isTrigger = true;
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.velocity = Vector2.zero;
 
         }
         else
         {
+            col.isTrigger = false;
             rb.bodyType = RigidbodyType2D.Dynamic;
             rb.simulated = true;
         }
