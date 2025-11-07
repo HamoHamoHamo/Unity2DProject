@@ -37,6 +37,7 @@ public class CharacterCombat : MonoBehaviour
 
     private Animator anim;
     private CharacterMovement movement;
+    private Rigidbody2D rb;
 
     private bool canAttack = true;
     private float attackTimer;
@@ -58,7 +59,7 @@ public class CharacterCombat : MonoBehaviour
     public bool IsPerformingAttack => isPerformingAttack;
     public bool IsPerformingGroggy => isPerformingGroggy;
     public bool IsGroggy => isGroggy;
-    public bool IsDead => IsDead;
+    public bool IsDead => isDead;
     public Transform AttackArea => attackArea;
     public Vector2 AttackBoxSize => attackBoxSize;
 
@@ -66,6 +67,7 @@ public class CharacterCombat : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         movement = GetComponent<CharacterMovement>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
@@ -221,6 +223,14 @@ public class CharacterCombat : MonoBehaviour
         {
             if (target == null) continue;
 
+            // 구르기 중인지, 죽었는지 확인
+            CharacterMovement targetMovement = target.GetComponent<CharacterMovement>();
+            CharacterCombat targetCombat = target.GetComponent<CharacterCombat>();
+            if ((targetMovement != null && targetMovement.IsDodging) || (targetCombat != null && targetCombat.IsDead))
+            {
+                continue; // 데미지 무시
+            }
+
             // Player일 때만 Bullet 튕겨내기 시도
             if (gameObject.layer == LayerMask.NameToLayer("Player"))
             {
@@ -249,20 +259,19 @@ public class CharacterCombat : MonoBehaviour
                 // Melee Enemy와의 공격 충돌 감지 (Player만)
                 if (target.gameObject.layer == LayerMask.NameToLayer("Enemy"))
                 {
-                    CharacterCombat enemyCombat = target.GetComponent<CharacterCombat>();
-                    if (enemyCombat != null &&
-                        enemyCombat.IsPerformingGroggy &&
-                        !enemyCombat.IsGroggy &&
-                        enemyCombat.AttackArea != null
+                    if (targetCombat != null &&
+                        targetCombat.IsPerformingGroggy &&
+                        !targetCombat.IsGroggy &&
+                        targetCombat.AttackArea != null
                     )
                     {
                         // Enemy도 공격 판정 중이고 그로기 상태가 아님
                         // 두 공격 박스가 겹치는지 확인
-                        if (CheckAttackBoxOverlap(enemyCombat))
+                        if (CheckAttackBoxOverlap(targetCombat))
                         {
                             // 양쪽 모두 그로기 상태로
                             EnterGroggy();
-                            enemyCombat.EnterGroggy();
+                            targetCombat.EnterGroggy();
 
                             alreadyHitTargets.Add(target); // 중복 처리 방지
 
@@ -277,13 +286,6 @@ public class CharacterCombat : MonoBehaviour
                         }
                     }
                 }
-            }
-
-            // 구르기 중인지 확인
-            CharacterMovement targetMovement = target.GetComponent<CharacterMovement>();
-            if (targetMovement != null && targetMovement.IsDodging)
-            {
-                continue; // 데미지 무시
             }
 
             if (!isGroggy)
@@ -425,31 +427,21 @@ public class CharacterCombat : MonoBehaviour
 
     }
 
-    public void SetDeadStatus(bool value)
+    public void SetDeadStatus(bool dead)
     {
-        isDead = value;
+        isDead = dead;
 
-        if (value == true) EnterDie();
-
-        // 특정 레이어와의 충돌 무시
-        int currentLayer = gameObject.layer;
-        int playerLayer = LayerMask.NameToLayer("Player");
-        int enemyLayer = LayerMask.NameToLayer("Enemy");
-        int bulletLayer = LayerMask.NameToLayer("Bullet");
-        int throwableLayer = LayerMask.NameToLayer("ThrowableItem");
-
-        // Player가 죽었을 때
-        if (currentLayer == playerLayer)
+        if (dead)
         {
-            Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, value);
-            Physics2D.IgnoreLayerCollision(playerLayer, bulletLayer, value);
+            EnterDie();
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.velocity = Vector2.zero;
+
         }
-        // Enemy가 죽었을 때
-        else if (currentLayer == enemyLayer)
+        else
         {
-            Physics2D.IgnoreLayerCollision(enemyLayer, playerLayer, value);
-            Physics2D.IgnoreLayerCollision(enemyLayer, bulletLayer, value);
-            Physics2D.IgnoreLayerCollision(enemyLayer, throwableLayer, value);
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.simulated = true;
         }
     }
 

@@ -39,7 +39,11 @@ public class PlayerController : MonoBehaviour, IDamageable
 
     void OnEnable()
     {
-        combat.SetDeadStatus(false);
+        if (combat != null && combat.IsDead)
+        {
+            Debug.Log("OnEnable player");
+            combat.SetDeadStatus(false);
+        }
     }
 
     private void HandleInput()
@@ -194,12 +198,12 @@ public class PlayerController : MonoBehaviour, IDamageable
         {
             combat.SetDeadStatus(true);
             StopAllCoroutines();
-            Managers.TimeSlow.DeactivateSlowMotion();
+
+            Managers.TimeSlow.SetTimeSlow(false);
 
             Managers.Sound.Play("PlayerDie");
             anim.SetTrigger("Die");
 
-            // TODO: 게임 오버
             Managers.Game.GameOver();
         }
     }
@@ -209,6 +213,7 @@ public class PlayerController : MonoBehaviour, IDamageable
     /// </summary>
     public void TakeDamage(int damage)
     {
+        if (combat.IsDead) return;
         Die();
     }
 

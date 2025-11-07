@@ -93,7 +93,6 @@ public class ThrowableItem : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
-                Debug.Log($"Enemy hit for {damage} damage!");
             }
 
             Managers.Pool.ReturnPool(this, false);

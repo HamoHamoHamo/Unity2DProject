@@ -86,7 +86,11 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         movement.CanMove(true);
         currentState = EnemyState.Idle;
-        combat.SetDeadStatus(false);
+        if (combat != null && combat.IsDead)
+        {
+            Debug.Log("OnEnable enemy");
+            combat.SetDeadStatus(false);
+        }
     }
 
     void Update()
@@ -353,6 +357,7 @@ public class Enemy : MonoBehaviour, IDamageable
     /// </summary>
     public void TakeDamage(int damage)
     {
+        if (combat.IsDead) return;
         Managers.Sound.Play("EnemyHit");
 
         if (slashLineEffect != null && player != null)

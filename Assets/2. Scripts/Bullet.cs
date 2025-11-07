@@ -16,6 +16,7 @@ public class Bullet : MonoBehaviour
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+
     private int damage;
     private bool isActive;
     private bool isDeflected; // 튕겨진 상태
